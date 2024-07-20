@@ -11,7 +11,6 @@
 const boy = 'b';
 const girl = 'g';
 const orpheus = 'o';
-let player = '';
 // Boxes
 const box = 'd';
 const selectionBox = 's'
@@ -21,6 +20,7 @@ const grass = 'q'
 const crate = 'c'
 const earth = 'e'
 const tallGrass = 't'
+const ticket = 'v'
 
 const girlGraphics = bitmap`
 ....00000000....
@@ -56,6 +56,8 @@ const boyGraphics = bitmap`
 ...0777007770...
 ...0550..0550...
 ....00....00....`
+
+let player = '';
 
 
 setLegend(
@@ -182,13 +184,30 @@ D4DD4D4D444D4D44
 44D444444DD44444
 444DDDDDD4444444
 4444DDD444444444
-4444444444444444` ]
+4444444444444444` ],
+  [ ticket, bitmap`
+................
+.....88..88.....
+....83388338....
+....83333338....
+....83333338....
+....83333338....
+....83333338....
+....83388338....
+....83388338....
+....83333338....
+....83333338....
+....83333338....
+....83333338....
+....83388338....
+.....88..88.....
+................`]
 )
 
 // Player's position
 let playerX = 1
 let playerY = 1
-let map = []
+let autoMap = []
 
 // ---------------------------------- Helper functions ----------------------------------
 // Prepare the map
@@ -204,7 +223,7 @@ function createMap() {
       // Go through each of the sprites that are in this place and insert them
       let sprites = getTile(j, i)
       for (let k = 0; k < sprites.length; k++)
-        map[i][j].push(sprites[k])
+        map[i][j].push(sprites[k].type)
     }
   }
 
@@ -223,7 +242,7 @@ function setCurrentMap(map) {
   }
 
   // Set the map
-  SetMap(tempMap)
+  setMap(tempMap)
 
   // Add sprites to it
   for (let i = 0; i < map.length; i++) {
@@ -238,7 +257,7 @@ function setCurrentMap(map) {
 // Setup the map, so it sticks to the player
 function setupMap(posX, posY, width, height, map) {
   // Get dimensions
-  var newMap = []
+  var secondMap = []
   let mapWidth = map[0].length
   let mapHeight = map.length
 
@@ -246,18 +265,18 @@ function setupMap(posX, posY, width, height, map) {
   posY = Math.max(Math.min(mapHeight - height, posY), 0)
 
   // Build the new map only from the given range
-  for (let i = 0; i < mapHeight; i++) {
-    newMap.push([])
-    for (let j = 0; j < mapWidth; j++) {
-      newMap[i].push([])
+  for (let i = 0; i < height; i++) {
+    secondMap.push([])
+    for (let j = 0; j < width; j++) {
+      secondMap[i].push([])
 
       for (var k = 0; k < map[i+posY][j+posX].length; k++) {
-        newMap[i][j].push(map[i+posY][j+posX][k])
+        secondMap[i][j].push(map[i+posY][j+posX][k])
       }
     }
   }
 
-  return newMap
+  return secondMap
 }
 
 
@@ -350,9 +369,6 @@ qqqqqqqqqqqqq`,
 
 let level = "Start"
 setMap(levels[level]);
-// Set the correct map based off player's position
-map = createMap()
-setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, map))
 
 
 // Current state (There are 5 states of the game: Dialogue, Choice, Overworld, Battle, Menu)
@@ -390,6 +406,12 @@ onInput("k", () => {
           addSprite(1, 1, boy)
         else
           addSprite(1, 1, girl)
+
+        playerX = 1
+        playerY = 1
+
+        autoMap = createMap()
+        setCurrentMap(autoMap)
       }
     }
   }
@@ -417,6 +439,12 @@ onInput("l", () => {
           addSprite(1, 1, boy)
         else
           addSprite(1, 1, girl)
+
+        playerX = 1
+        playerY = 1
+
+        autoMap = createMap()
+        setCurrentMap(autoMap)
       }
     }
   }
@@ -426,11 +454,14 @@ onInput("l", () => {
 onInput("w", () => {
   // Handle movement
   if (state == "Overworld") {
+    setCurrentMap(autoMap);
     if (player == girl) {
       getFirst(girl).y -= 1
+      playerY = getFirst(girl).y;
     }
     else {
       getFirst(boy).y -= 1
+      playerY = getFirst(boy).y;
     }
   }
 })
@@ -438,11 +469,14 @@ onInput("w", () => {
 onInput("s", () => {
   // Handle movement
   if (state == "Overworld") {
+    setCurrentMap(autoMap);
     if (player == girl) {
       getFirst(girl).y += 1
+      playerY = getFirst(girl).y;
     }
     else {
       getFirst(boy).y += 1
+      playerY = getFirst(boy).y;
     }
   }
 })
@@ -460,14 +494,14 @@ onInput("a", () => {
 
   // Control movement
   if (state == "Overworld") {
-    setMapV2(map);
+    setCurrentMap(autoMap);
     if (player == girl) {
       getFirst(girl).x -= 1
       playerX = getFirst(girl).x;
     }
     else {
       getFirst(boy).x -= 1
-      playerY = getFirst(boy).x;
+      playerX = getFirst(boy).x;
     }
   }
 })
@@ -485,14 +519,14 @@ onInput("d", () => {
 
   // Control movement
   if (state == "Overworld") {
-    setMapV2(map);
+    setCurrentMap(autoMap);
     if (player == girl) {
       getFirst(girl).x += 1
       playerX = getFirst(girl).x;
     }
     else {
       getFirst(boy).x += 1
-      playerY = getFirst(boy).x;
+      playerX = getFirst(boy).x;
     }
   }
 })
@@ -505,6 +539,11 @@ afterInput(() => {
     if (level == "Start") {
       startDialogue(line, choice, select, chose)
     }
+  }
+
+  else if (level == "Overworld") {
+    autoMap = createMap();
+    setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap))
   }
 })
 
