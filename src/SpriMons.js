@@ -6,42 +6,16 @@
 */
 
 
-
-// ---------------------------------- Helper functions ----------------------------------
-// Write the correct dialogue line, depending on the argument
-function startDialogue(line) {
-  text = ""
-  switch(line) {
-    case 0:
-      text = "Welcome to the\nHack Club's\nWorld!";
-      break;
-    case 1:
-      text = "Here we take care \nof SpriMons,\ntrain them\nand battle along\nwith them"
-      break;
-    case 2:
-      text = "Everything was\nfun and all, but\nsomeone fed\nHakkuun some\nsleeping pills!"
-      break;
-    case 3:
-      text = "Arcade cannot\ncontinue without\nher!\nYou must\nsave this event!"
-      break;
-    case 4:
-      text = "You can do this,\nby finding enough\ntickets.\nWe need them to\nwake her up!"
-      break;
-    case 5:
-      text = "When she will"
-  }
-
-  addText(text, {x: 2, y: 9, color: 3})
-}
-
-
 // ---------------------------------- Sprites setup ----------------------------------
 // Character sprites
-const boy = "b";
-const girl = "g";
-const orpheus = "o";
-// Dialogue box
-const box = "d";
+const boy = 'b';
+const girl = 'g';
+const orpheus = 'o';
+var player = 'b';
+// Boxes
+const box = 'd';
+const selectionBox = 's'
+
 
 setLegend(
   [ boy, bitmap`
@@ -111,8 +85,86 @@ setLegend(
 1111111111111111
 1111111111111111
 1111111111111111
-1111111111111111`]
+1111111111111111`],
+  [ selectionBox, bitmap`
+0000000000000000
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0000000000000000`]
 )
+
+
+// ---------------------------------- Helper functions ----------------------------------
+// Write the correct dialogue line, depending on the argument
+function startDialogue(line, choice, select = 0, chose = false) {
+  if (!choice[0]) {
+    let text = ""
+
+    // Set the correct text
+    switch(line) {
+      case 0:
+        text = "Welcome to the\nHack Club's\nWorld!";
+        break;
+      case 1:
+        text = "Here we take care \nof SpriMons,\ntrain them\nand battle along\nwith them"
+        break;
+      case 2:
+        text = "Everything was\nfun and all, but\nsomeone fed\nHakkuun some\nsleeping pills!"
+        break;
+      case 3:
+        text = "Arcade cannot\ncontinue without\nher!\nYou must\nsave this event!"
+        break;
+      case 4:
+        text = "You can do this,\nby finding enough\ntickets.\nWe need them to\nwake her up!"
+        break;
+      case 5:
+        text = "When she will\nsmell them, she\nwill wake up\nfor sure!"
+        break;
+      case 6:
+        text = "Go on!\nYou must save us!"
+        break;
+      case 7:
+        text = "Ah, I forgot!\nAre you a boy\nor a girl?"
+        choice[0] = true
+        break;
+    }
+    addText(text, {x: 2, y: 9, color: 3})
+  }
+
+  // Let player choose the gender
+  else {
+    // Draw the choices
+    addSprite(1, 2, boy)
+    addSprite(7, 2, girl)
+
+    // Draw selection box on top of the current gender
+    if (select == 0)
+      addSprite(1, 2, selectionBox)
+    else
+      addSprite(7, 2, selectionBox)
+
+    // Handle choosing the gender
+    if (chose) {
+      if (select == 0)
+        player = boy
+      else
+        player = girl
+      choice[0] = false
+    }
+  }
+}
 
 
 // ---------------------------------- Levels setup ----------------------------------
@@ -136,7 +188,10 @@ let state = "Dialogue";
 // Current dialogue line
 let line = 0
 // Current choice
-let choice = 0
+let choice = [false]
+// Selection index
+let select = 0
+let chose = false
 
 
 // ---------------------------------- Input setup ----------------------------------
@@ -145,14 +200,34 @@ if (state == "Dialogue") {
   onInput("k", () => {
     clearText()
     line += 1
-    startDialogue(line)
   })
 
   onInput("l", () => {
     clearText()
     line += 1
-    startDialogue(line)
   })
+
+  if (choice[0]) {
+    onInput("a", () => {
+      select -= 1
+      if (select < 0) 
+        select = 0
+    })
+
+    onInput("d", () => {
+      select += 1
+      if (select > 1) 
+        select = 1
+    })
+
+    onInput("k", () => {
+      chose = true
+    })
+
+    onInput("l", () => {
+      chose = true
+    })
+  }
 }
 
 if (state == "Overworld") {
@@ -161,11 +236,21 @@ if (state == "Overworld") {
 })
 }
 
-startDialogue(line)
-
-
 
 // ---------------------------------- Input handling ----------------------------------
 afterInput(() => {
-      
+  if (state == "Dialogue") {
+    // Start the beginning dialogue
+    if (level == "Start") {
+      clearTile(1, 2)
+      clearTile(7, 2)
+        
+      startDialogue(line, choice, select, chose)
+    }
+  }
 })
+
+
+
+// ---------------------------------- Start the game ----------------------------------
+startDialogue(line, choice)
