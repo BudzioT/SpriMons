@@ -167,25 +167,100 @@ CCCCCCCCCCCCCCCC`],
 0CC0CC0CC0CC0CC0
 0000000000000000` ],
   [ tallGrass, bitmap`
-................
-..DD..D.DD......
-..D4D.D.D4D.....
-..D44D4D44D.....
-DDD44D4D44D.....
-D4DD4D4D444D.D..
-.D4DDD4DD4DDD4D.
-.DD4DD44D4444DD.
-..D44D44D4444D..
-..D444D44444DD..
-..D44444444DD...
-..D4444444DD....
-..D444444DD.....
-...DDDDDD.......
-....DDD.........
-................` ]
+4444444444444444
+44DD44D4DD444444
+44D4D4D4D4D44444
+44D44D4D44D44444
+DDD44D4D44D44444
+D4DD4D4D444D4D44
+4D4DDD4DD4DDD4D4
+4DD4DD44D4444DD4
+44D44D44D4444D44
+44D444D44444DD44
+44D44444444DD444
+44D4444444DD4444
+44D444444DD44444
+444DDDDDD4444444
+4444DDD444444444
+4444444444444444` ]
 )
 
+// Player's position
+let playerX = 1
+let playerY = 1
+let map = []
+
 // ---------------------------------- Helper functions ----------------------------------
+// Prepare the map
+function createMap() {
+  var map = []
+  // Get every tile of the current map, save them in the variable
+  for (let i = 0; i < height(); i++) {
+    map.push([])
+
+    for (let j = 0; j < width(); j++) {
+      map[i].push([])
+
+      // Go through each of the sprites that are in this place and insert them
+      let sprites = getTile(j, i)
+      for (let k = 0; k < sprites.length; k++)
+        map[i][j].push(sprites[k])
+    }
+  }
+
+  return map
+}
+
+// Set the current map to the given one
+function setCurrentMap(map) {
+  var tempMap = ""
+  // Get structure of the map
+  for (let i = 0; i < map.length; i++) {
+    for (let j = 0; j < map[i].length; j++) {
+      tempMap += '.'
+    }
+    tempMap += '\n'
+  }
+
+  // Set the map
+  SetMap(tempMap)
+
+  // Add sprites to it
+  for (let i = 0; i < map.length; i++) {
+    for (let j = 0; j < map[i].length; j++) {
+      for (let k = 0; k < map[i][j].length; k++) {
+        addSprite(j, i, map[i][j][k])
+      }
+    }
+  }
+}
+
+// Setup the map, so it sticks to the player
+function setupMap(posX, posY, width, height, map) {
+  // Get dimensions
+  var newMap = []
+  let mapWidth = map[0].length
+  let mapHeight = map.length
+
+  posX = Math.max(Math.min(mapWidth - width, posX), 0)
+  posY = Math.max(Math.min(mapHeight - height, posY), 0)
+
+  // Build the new map only from the given range
+  for (let i = 0; i < mapHeight; i++) {
+    newMap.push([])
+    for (let j = 0; j < mapWidth; j++) {
+      newMap[i].push([])
+
+      for (var k = 0; k < map[i+posY][j+posX].length; k++) {
+        newMap[i][j].push(map[i+posY][j+posX][k])
+      }
+    }
+  }
+
+  return newMap
+}
+
+
 // Write the correct dialogue line, depending on the argument
 function startDialogue(line, choice, select, chose) {
   let text = ""
@@ -260,22 +335,24 @@ ddddddddd
 ddddddddd
 ddddddddd
 ddddddddd`,
-  "OverworldBoy": map`
-qqqqq
-qqqqq
-qqbqq
-qqqqq
-qqqqq`,
-  "OverworldGirl": map`
-qqqqq
-qqqqq
-qqgqq
-qqqqq
-qqqqq`
+  "Overworld": map`
+qqqqqqqqqqqqq
+qqqqqqqqqqqqq
+qqqqqqqqqqqqq
+qqqqttttttqqq
+qqqqtqqqqtqqq
+qqqqtqqqqtqqq
+qqqqtqqqqtqqq
+qqqqttttttqqq
+qqqqqqqqqqqqq
+qqqqqqqqqqqqq`,
 }
 
 let level = "Start"
 setMap(levels[level]);
+// Set the correct map based off player's position
+map = createMap()
+setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, map))
 
 
 // Current state (There are 5 states of the game: Dialogue, Choice, Overworld, Battle, Menu)
@@ -304,14 +381,15 @@ onInput("k", () => {
     if (level == "Start") {
       // Start the overworld map
       if (line >= 8) {
-        if (player == boy)
-          level = "OverworldBoy"
+        level = "Overworld"
         
-        else
-          level = "OverworldGirl"
-
         state = "Overworld"
         setMap(levels[level])
+
+        if (player == boy)
+          addSprite(1, 1, boy)
+        else
+          addSprite(1, 1, girl)
       }
     }
   }
@@ -330,14 +408,15 @@ onInput("l", () => {
 
     if (level == "Start") {
       // Start the game's overworld if needed
-      if (line >= 9) {
-        if (player == boy)
-          level = "OverworldBoy"
-        else
-          level = "OverworldGirl"
-        
+      if (line >= 8) {
+        level = "Overworld"
         state = "Overworld"
         setMap(levels[level])
+
+        if (player == boy)
+          addSprite(1, 1, boy)
+        else
+          addSprite(1, 1, girl)
       }
     }
   }
@@ -347,7 +426,7 @@ onInput("l", () => {
 onInput("w", () => {
   // Handle movement
   if (state == "Overworld") {
-    if (level == "OverworldGirl") {
+    if (player == girl) {
       getFirst(girl).y -= 1
     }
     else {
@@ -359,7 +438,7 @@ onInput("w", () => {
 onInput("s", () => {
   // Handle movement
   if (state == "Overworld") {
-    if (level == "OverworldGirl") {
+    if (player == girl) {
       getFirst(girl).y += 1
     }
     else {
@@ -381,11 +460,14 @@ onInput("a", () => {
 
   // Control movement
   if (state == "Overworld") {
-    if (level == "OverworldGirl") {
+    setMapV2(map);
+    if (player == girl) {
       getFirst(girl).x -= 1
+      playerX = getFirst(girl).x;
     }
     else {
       getFirst(boy).x -= 1
+      playerY = getFirst(boy).x;
     }
   }
 })
@@ -403,11 +485,14 @@ onInput("d", () => {
 
   // Control movement
   if (state == "Overworld") {
-    if (level == "OverworldGirl") {
+    setMapV2(map);
+    if (player == girl) {
       getFirst(girl).x += 1
+      playerX = getFirst(girl).x;
     }
     else {
       getFirst(boy).x += 1
+      playerY = getFirst(boy).x;
     }
   }
 })
