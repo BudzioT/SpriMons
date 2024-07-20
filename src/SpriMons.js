@@ -16,26 +16,13 @@ let player = '';
 const box = 'd';
 const selectionBox = 's'
 
+// Overworld tiles
+const grass = 'q'
+const crate = 'c'
+const earth = 'e'
+const tallGrass = 't'
 
-setLegend(
-  [ boy, bitmap`
-....00000000....
-...0333333330...
-..033333333330..
-..011333333110..
-.0CCC111111CCC0.
-.0C2220220222C0.
-..022202202220..
-...0022992200...
-..033000000330..
-.02733333333720.
-.02273333337220.
-..000533335000..
-...0575555750...
-...0777007770...
-...0550..0550...
-....00....00....` ],
-  [ girl, bitmap`
+const girlGraphics = bitmap`
 ....00000000....
 ...0888888880...
 ..088888888880..
@@ -51,7 +38,30 @@ setLegend(
 ...0575555750...
 ...0777007770...
 ...0110..0110...
-....00....00....`],
+....00....00....`
+const boyGraphics = bitmap`
+....00000000....
+...0333333330...
+..033333333330..
+..011333333110..
+.0CCC111111CCC0.
+.0C2220220222C0.
+..022202202220..
+...0022992200...
+..033000000330..
+.02733333333720.
+.02273333337220.
+..000533335000..
+...0575555750...
+...0777007770...
+...0550..0550...
+....00....00....`
+
+
+setLegend(
+  // Dialog and general
+  [ boy, boyGraphics ],
+  [ girl, girlGraphics],
   [ orpheus, bitmap`
 ...000000.......
 ...0222220......
@@ -102,9 +112,78 @@ setLegend(
 0..............0
 0..............0
 0..............0
-0000000000000000`]
+0000000000000000`],
+  
+  // Overworld
+  [ grass, bitmap`
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444
+4444444444444444` ],
+  [ earth, bitmap`
+CCCCCCCCCCCCCCCC
+CCCCCCCCLLCCCCCC
+CCCCCCCCCLCCCLCC
+CCLCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCLCCCCCC
+CCCCCLLLCCCCLCCC
+CCCCCCLCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCLCC
+CCCCLCCCLCCCCLCC
+CCCCCCCCLCCCLLCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC`],
+  [ crate, bitmap`
+0000000000000000
+0CC0CC0CC0CC0CC0
+0C999999999999C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C90CC0CC0CC09C0
+0C999999999999C0
+0CC0CC0CC0CC0CC0
+0000000000000000` ],
+  [ tallGrass, bitmap`
+................
+..DD..D.DD......
+..D4D.D.D4D.....
+..D44D4D44D.....
+DDD44D4D44D.....
+D4DD4D4D444D.D..
+.D4DDD4DD4DDD4D.
+.DD4DD44D4444DD.
+..D44D44D4444D..
+..D444D44444DD..
+..D44444444DD...
+..D4444444DD....
+..D444444DD.....
+...DDDDDD.......
+....DDD.........
+................` ]
 )
-
 
 // ---------------------------------- Helper functions ----------------------------------
 // Write the correct dialogue line, depending on the argument
@@ -144,25 +223,22 @@ function startDialogue(line, choice, select, chose) {
       addSprite(1, 2, boy)
       addSprite(7, 2, girl)
 
-      // Draw selection box on top of the current gender
-      if (select == 0)
+      // Draw selection box on top of the current gender, select it
+      if (select == 0) {
         addSprite(1, 2, selectionBox)
-      else
-        addSprite(7, 2, selectionBox)
-
-      // Handle choosing the gender
-      if (chose) {
-        if (select == 0)
-          player = boy
-        else
-          player = girl
-  
-        choice[0] = false
+        player = boy
       }
-      
+      else {
+        addSprite(7, 2, selectionBox)
+        player = girl
+      }      
       break;
     case 8: 
-      text = "Yes...\nI remember now!\n"
+      text = "Yes...\nI remember now!\nYou are a "
+      if (player == boy)
+        text += "boy"
+      else
+        text += "girl"
       break;
     case 9:
       text = "You are our\nlast hope!\nPlease save us!"
@@ -183,8 +259,21 @@ const levels = {
 ddddddddd
 ddddddddd
 ddddddddd
-ddddddddd`
+ddddddddd`,
+  "OverworldBoy": map`
+qqqqq
+qqqqq
+qqbqq
+qqqqq
+qqqqq`,
+  "OverworldGirl": map`
+qqqqq
+qqqqq
+qqgqq
+qqqqq
+qqqqq`
 }
+
 let level = "Start"
 setMap(levels[level]);
 
@@ -211,6 +300,20 @@ onInput("k", () => {
     // Go to the next line
     clearText()
     line += 1
+
+    if (level == "Start") {
+      // Start the overworld map
+      if (line >= 8) {
+        if (player == boy)
+          level = "OverworldBoy"
+        
+        else
+          level = "OverworldGirl"
+
+        state = "Overworld"
+        setMap(levels[level])
+      }
+    }
   }
 })
 
@@ -224,7 +327,44 @@ onInput("l", () => {
     // Go to the next line
     clearText()
     line += 1
-    
+
+    if (level == "Start") {
+      // Start the game's overworld if needed
+      if (line >= 9) {
+        if (player == boy)
+          level = "OverworldBoy"
+        else
+          level = "OverworldGirl"
+        
+        state = "Overworld"
+        setMap(levels[level])
+      }
+    }
+  }
+})
+
+
+onInput("w", () => {
+  // Handle movement
+  if (state == "Overworld") {
+    if (level == "OverworldGirl") {
+      getFirst(girl).y -= 1
+    }
+    else {
+      getFirst(boy).y -= 1
+    }
+  }
+})
+
+onInput("s", () => {
+  // Handle movement
+  if (state == "Overworld") {
+    if (level == "OverworldGirl") {
+      getFirst(girl).y += 1
+    }
+    else {
+      getFirst(boy).y += 1
+    }
   }
 })
 
@@ -238,6 +378,16 @@ onInput("a", () => {
         select = 0
     }
   }
+
+  // Control movement
+  if (state == "Overworld") {
+    if (level == "OverworldGirl") {
+      getFirst(girl).x -= 1
+    }
+    else {
+      getFirst(boy).x -= 1
+    }
+  }
 })
 
 onInput("d", () => {
@@ -248,6 +398,16 @@ onInput("d", () => {
       select += 1
       if (select > 1) 
         select = 1
+    }
+  }
+
+  // Control movement
+  if (state == "Overworld") {
+    if (level == "OverworldGirl") {
+      getFirst(girl).x += 1
+    }
+    else {
+      getFirst(boy).x += 1
     }
   }
 })
