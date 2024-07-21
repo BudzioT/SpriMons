@@ -335,11 +335,38 @@ function startDialogue(line, choice, select, chose) {
         text += "girl"
       break;
     case 9:
+      text = "Which SpriMon\nmatches your vibe\n the most?"
+      break;
+    case 10:
       text = "You are our\nlast hope!\nPlease save us!"
       break;
   }
   
   addText(text, {x: 2, y: 9, color: 3})
+}
+
+function createOverworld() {
+  setSolids([girl, boy, crate]);
+  setPushables({
+    [boy]: [crate],
+    [girl]: [crate]
+  })
+  
+  level = "Overworld"
+  state = "Overworld"
+  setMap(levels[level])
+  setBackground(earth)
+
+  if (player == boy)
+    addSprite(1, 1, boy)
+  else
+    addSprite(1, 1, girl)
+
+  playerX = 1
+  playerY = 1
+
+  autoMap = createMap()
+  setCurrentMap(autoMap)
 }
 
 
@@ -355,16 +382,24 @@ ddddddddd
 ddddddddd
 ddddddddd`,
   "Overworld": map`
-qqqqqqqqqqqqq
-qqqqqqqqqqqqq
-qqqqqqqqqqqqq
-qqqqttttttqqq
-qqqqtqqqqtqqq
-qqqqtqqqqtqqq
-qqqqtqqqqtqqq
-qqqqttttttqqq
-qqqqqqqqqqqqq
-qqqqqqqqqqqqq`,
+qqqqqqqqqqqqqqqqqqqqqqq
+qq.....................
+qqqqqqqqqqqqqqqqqqqqqqq
+qqttqqqqqqqqqqqqqqqqqqq
+qqttq..................
+qqttt.ttttttttttttttttt
+qqttt.tttttttqqqqqqqqqq
+qqttt.tt...............
+qqttt.tt.qqqqqqqqqqqqqq
+qqtttttt.qqqqttttttttqq
+qqtttttt.qqqqttttttttqq
+qqtttvqq.qqqqttttttttqq
+qqttttqq.qqqqttt..tttqq
+qqttttqq.qqqqttt.vtttqq
+qqttt.qq.qqqqttttttttqq
+qqttt.qq.qqqqttttttttqq
+qqttt.qq.qqqqttttttttqq
+qqttt.qq.qqqqqqqqqqqqqq`,
 }
 
 let level = "Start"
@@ -380,6 +415,9 @@ let choice = [false]
 // Selection index
 let select = 0
 let chose = false
+
+// Tickets count
+tickets = 0
 
 
 // ---------------------------------- Input setup ----------------------------------
@@ -397,21 +435,7 @@ onInput("k", () => {
     if (level == "Start") {
       // Start the overworld map
       if (line >= 8) {
-        level = "Overworld"
-        
-        state = "Overworld"
-        setMap(levels[level])
-
-        if (player == boy)
-          addSprite(1, 1, boy)
-        else
-          addSprite(1, 1, girl)
-
-        playerX = 1
-        playerY = 1
-
-        autoMap = createMap()
-        setCurrentMap(autoMap)
+        createOverworld()
       }
     }
   }
@@ -431,20 +455,7 @@ onInput("l", () => {
     if (level == "Start") {
       // Start the game's overworld if needed
       if (line >= 8) {
-        level = "Overworld"
-        state = "Overworld"
-        setMap(levels[level])
-
-        if (player == boy)
-          addSprite(1, 1, boy)
-        else
-          addSprite(1, 1, girl)
-
-        playerX = 1
-        playerY = 1
-
-        autoMap = createMap()
-        setCurrentMap(autoMap)
+        createOverworld()
       }
     }
   }
@@ -542,8 +553,24 @@ afterInput(() => {
   }
 
   else if (level == "Overworld") {
+    // Update the camera position
     autoMap = createMap();
     setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap))
+
+    // Make player able to collect tickets
+    playerTickets = tilesWith(player, ticket)
+    clearText()
+    
+    if (playerTickets.length > 0) {
+      //addText(playerTickets.length.toString(), 1, 1)
+      tickets += 1
+      ticketTile = getTile(player.x, player.y)
+      addText(ticketTile.length.toString(), 1, 1)
+      for (let i = 0; i < ticketTile.length; i++) {
+        if (ticketTile[i].type == ticket)
+          ticketTile[i].remove()
+      }
+    }
   }
 })
 
