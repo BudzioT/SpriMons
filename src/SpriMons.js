@@ -19,18 +19,18 @@ const raspberin = 'r';
 const gitbon = 'n';
 
 const spriMonsData = { 
-  orpheus: { "HP": 10, "SP": 5, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1,"EXP": 50, 
+  [orpheus]: { "HP": 10, "SP": 5, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1,"EXP": 50, 
             "DROP": 35, "NAME1": "Punch", "NAME2": "Scratch", "NICKNAME": "Orpheus"},
-  hakkuun: { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1, "EXP": 45, 
+  [hakkuun]: { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1, "EXP": 45, 
             "DROP": 40, "NAME1": "Swipe", "NAME2": "Scratch", "NICKNAME": "Hakkuun"},
-  hackMon: { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1, "EXP": 50, 
+  [hackMon]: { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1, "EXP": 50, 
             "DROP": 45, "NAME1": "Code", "NAME2": "Break", "NICKNAME": "HackMon"},
-  sprigus: { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2, "EXP": 30, 
+  [sprigus]: { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2, "EXP": 30, 
             "DROP": 50, "NAME1": "Push", "NAME2": "Jump", "NICKNAME": "Sprigus"},
-  raspberin: { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2, "EXP": 40, 
-              "DROP": 45, "NAME1": "Beep", "NAME2": "Light", "NICKNAME": "RASPBERIN"},
-  gitbon: { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, "EXP": 45, 
-              "DROP": 50, "NAME1": "Push", "NAME2": "Pull", "NICKNAME": "GITBON"}
+  [raspberin]: { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2, "EXP": 40, 
+              "DROP": 45, "NAME1": "Beep", "NAME2": "Light", "NICKNAME": "Raspberin"},
+  [gitbon]: { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, "EXP": 45, 
+              "DROP": 50, "NAME1": "Push", "NAME2": "Pull", "NICKNAME": "Gitbon"}
 };
   
 // Boxes
@@ -87,12 +87,14 @@ let opponent = '';
 let opponentStats = {};
 let opponentLevel = 1;
 let opponentHp = 0;
+let opponentSp = 0;
 
 
 let spriMon = '';
 let exp = 0;
 let stats = {};
 let hp = 0;
+let sp = 0;
 
 
 setLegend(
@@ -576,8 +578,8 @@ function createOverworld() {
 function endScreen() {
   level = "End"
   state = "End"
-  setMap(levels[level])
-  setBackground(earth)
+  setMap(levels[level]);
+  setBackground(earth);
 
   addText("Have fun building!\n\nWE LOVE Hack Club!", {x: 1, y: 8, color: color`2`});
 }
@@ -599,7 +601,7 @@ function handleAccept() {
 
     if (level == "Start") {
       if (line == 8)
-        chose = false
+        chose = false;
       
       // Start the overworld map
       if (line > maxLine) {
@@ -634,29 +636,54 @@ function Battle() {
   playerY = 1;
 
   // Add sprites
-  addSprite(6, 3, opponent)
-  addSprite(6, 6, spriMon)
+  addSprite(6, 3, opponent);
+  addSprite(6, 6, spriMon);
   // Set the map
   autoMap = createMap();
   setCurrentMap(autoMap);
 
   // Give proper statistics
-  opponentStats = spriMonsData[opponent]
-  stats = spriMonsData[spriMon]
+  opponentStats = { ...spriMonsData[opponent] };
+  stats = { ...spriMonsData[spriMon] };
 
   for (let stat in opponentStats) {
-    opponentStats[stat] *= (level * 1.5)
-    stats[stat] *= (level * 1.5)
+    if (typeof opponentStats[stat] == 'number') {
+      opponentStats[stat] *= (opponentLevel * 1.5);
+    }
   }
 
-  hp = stats["HP"]
-  opponentHp = opponentStats["HP"]
+  for (let stat in stats) {
+    if (typeof stats[stat] === 'number') {
+      stats[stat] *= (spriMonLevel * 1.5);
+    }
+  }
 
-  BattleText()
+  // Set correct stats
+  hp = Math.round(spriMonsData[spriMon]["HP"]);
+  sp = Math.round(spriMonsData[spriMon]["SP"]);
+  opponentHp = Math.round(opponentStats["HP"]);
+  opponentSp = Math.round(opponentStats["SP"]);
+
+  BattleText();
 }
 
 function BattleText() {
-  addText(opponentsStats["NICKNAME"], {x: 3, y: 3, color: color`2`})
+  addText(opponentStats["NICKNAME"], {x: 8, y: 3, color: color`2`});
+  addText("HP: " + opponentHp, {x: 0, y: 3, color: color`3`});
+  addText("SP: " + opponentSp, {x: 0, y: 5, color: color`7`});
+  addText(opponentLevel + '', {x: 18, y: 3, color: color`2`});
+  
+  addText(stats["NICKNAME"], {x: 8, y: 8, color: color`2`});
+  addText("HP: " + hp, {x: 0, y: 8, color: color`3`});
+  addText("SP: " + sp, {x: 0, y: 10, color: color`7`});
+  addText(spriMonLevel + '', {x: 18, y: 8, color: color`2`});
+  
+  addText(stats["NAME1"] + '', {x: 1, y: 13, color: color`4`});
+  addText(stats["NAME2"] + '', {x: 10, y: 13, color: color`4`});
+}
+
+function BattleOngoing() {
+  
 }
 
 
