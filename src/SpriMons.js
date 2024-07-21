@@ -12,28 +12,27 @@ const boy = 'b';
 const girl = 'g';
 
 const orpheus = 'o';
-const orpheusData = { "HP": 10, "SP": 5, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1,
-                    "EXP": 50, "DROP": 35};
-
 const hakkuun = 'h';
-const hakkuunData = { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1,
-                    "EXP": 45, "DROP": 40};
-
 const hackMon = 'm';
-const hackMonData = { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1,
-                    "EXP": 50, "DROP": 45};
-
 const sprigus = 'u';
-const sprigusData = { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2,
-                    "EXP": 30, "DROP": 50};
-
 const raspberin = 'r';
-const raspberinData = { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2,
-                      "EXP": 40, "DROP": 45}
+const gitbon = 'n';
 
-const gubon = 'n';
-const gubonData = { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, 
-                  "EXP": 45, "DROP": 50}
+const spriMonsData = { 
+  orpheus: { "HP": 10, "SP": 5, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1,"EXP": 50, 
+            "DROP": 35},
+  hakkuun: { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1, "EXP": 45, 
+            "DROP": 40},
+  hackMon: { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1, "EXP": 50, 
+            "DROP": 45},
+  sprigus: { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2, "EXP": 30, 
+            "DROP": 50},
+  raspberin: { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2, "EXP": 40, 
+              "DROP": 45},
+  gitbon: { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, "EXP": 45, 
+              "DROP": 50}
+};
+  
 // Boxes
 const box = 'd';
 const selectionBox = 's';
@@ -82,7 +81,12 @@ const boyGraphics = bitmap`
 ....00....00....`;
 
 let player = '';
-let opponents = [orpheus, hackMon, sprigus, raspberin, gubon]
+let opponents = [orpheus, hackMon, sprigus, raspberin, gitbon];
+
+let opponent = '';
+let opponentLevel = 1;
+let spriMon = '';
+let exp = 0;
 
 
 setLegend(
@@ -208,23 +212,23 @@ DDDD2DDDDD2DDDDD
 ......0000......
 ................
 ................`],
-  [ gubon, bitmap`
-................
-................
-................
-................
-................
-................
-................
-................
-................
-................
-................
-................
-................
-................
-................
-................` ],
+  [ gitbon, bitmap`
+.00000000000000.
+0222000000002220
+0022222222222200
+0002222222222000
+0002222222222000
+0002222222222000
+0002222222222000
+0000222222220000
+0000022222200000
+0000000220000000
+0000000222000000
+0022002222200000
+0002222222200000
+0000002222200000
+.00000222220000.
+..000022222000..` ],
   
   // Overworld
   [ grass, bitmap`
@@ -335,8 +339,6 @@ D4DD4D4D444D4D44
 let playerX = 1;
 let playerY = 1;
 let autoMap = [];
-
-let spriMon = '';
 
 let movement = true;
 let hakkuunInteraction = false;
@@ -509,6 +511,7 @@ function startDialogue(line, choice, select, chose) {
   addText(text, {x: 2, y: 9, color: 3});
 }
 
+// Start the ending dialogue
 function EndDialogue(line) {
   let text = "";
 
@@ -537,6 +540,7 @@ function EndDialogue(line) {
   addText(text, {x: 2, y: 9, color: 3});
 }
 
+// Create the overworld map
 function createOverworld() {
   setSolids([girl, boy, crate]);
   setPushables({
@@ -570,6 +574,7 @@ function endScreen() {
   addText("Have fun building!\n\nWE LOVE Hack Club!", {x: 1, y: 8, color: color`2`});
 }
 
+// Handle the accept buttons
 function handleAccept() {
   if (state == "Dialogue") {
     // Accept the choice
@@ -607,6 +612,12 @@ function handleAccept() {
     if (playerHakkuun.length > 0)
       hakkuunInteraction = true
   }
+}
+
+// Handle battle system
+function Battle() {
+  addSprite(7, 2, opponent)
+  addSprite(7, 5, spriMon)
 }
 
 
@@ -664,7 +675,17 @@ ddddddddd
 ddddddddd
 ddddddddd`,
   "HakkuunBattle": map``,
-  "Battle": map``,
+  "Battle": map`
+dddd.....dddd
+....dd.dd....
+ddddddddddddd
+dddd.....dddd
+....dd.dd....
+ddddddddddddd
+.............
+ddddddddddddd
+.............
+.............`,
   "End": map`
 yyyyyy
 yhobgy
@@ -678,7 +699,7 @@ setMap(levels[level]);
 
 
 // Current state (There are 5 states of the game: Dialogue, Menu, Overworld, Battle, End)
-let state = "Dialogue";;
+let state = "Dialogue";
 // Current dialogue line
 let line = 0;
 // Current choice
@@ -688,7 +709,9 @@ let select = 0;
 let chose = false;
 
 // Tickets count
-tickets = 0;
+let tickets = 0;
+
+let spriMonLevel = 0;
 
 
 // ---------------------------------- Input setup ----------------------------------
@@ -811,6 +834,10 @@ afterInput(() => {
       EndDialogue(line)
   }
 
+  if (state == "Battle") {
+    Battle()
+  }
+
   else if (level == "Overworld") {
     // Write tickets count
     clearText();
@@ -837,7 +864,18 @@ afterInput(() => {
     if (playerGrass.length > 0) {
       let chance = Math.random()
       if (chance < 0.1) {
-        let opponent = 
+        opponent = opponents[Math.floor(Math.random() * opponents.length)]
+        opponentLevel = Math.floor(Math.random() * spriMonLevel + 1)
+
+        clearText()
+
+        level = "Battle";
+        state = "Battle";
+        setBackground(box);
+        setMap(levels[level]);
+
+        Battle()
+        return;
       }
     } 
 
