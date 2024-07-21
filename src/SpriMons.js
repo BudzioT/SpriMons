@@ -57,13 +57,15 @@ const boyGraphics = bitmap`
 ...0550..0550...
 ....00....00....`
 
-let player = '';
+let player = 'x';
+let gender = 'b'
 
 
 setLegend(
   // Dialog and general
   [ boy, boyGraphics ],
   [ girl, girlGraphics],
+  [ player, boyGraphics],
   [ orpheus, bitmap`
 ...000000.......
 ...0222220......
@@ -320,16 +322,17 @@ function startDialogue(line, choice, select, chose) {
       // Draw selection box on top of the current gender, select it
       if (select == 0) {
         addSprite(1, 2, selectionBox)
-        player = boy
+        gender = boy
+        player.type = boy
       }
       else {
         addSprite(7, 2, selectionBox)
-        player = girl
+        player.type = girl
       }      
       break;
     case 8: 
       text = "Yes...\nI remember now!\nYou are a "
-      if (player == boy)
+      if (gender == boy)
         text += "boy"
       else
         text += "girl"
@@ -351,16 +354,18 @@ function createOverworld() {
     [boy]: [crate],
     [girl]: [crate]
   })
+
+  if (gender == "boy")
+    player.type == boy
+  else
+    player.type == girl
   
   level = "Overworld"
   state = "Overworld"
   setMap(levels[level])
   setBackground(earth)
 
-  if (player == boy)
-    addSprite(1, 1, boy)
-  else
-    addSprite(1, 1, girl)
+  addSprite(1, 1, player)
 
   playerX = 1
   playerY = 1
@@ -480,14 +485,8 @@ onInput("w", () => {
   // Handle movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    if (player == girl) {
-      getFirst(girl).y -= 1
-      playerY = getFirst(girl).y;
-    }
-    else {
-      getFirst(boy).y -= 1
-      playerY = getFirst(boy).y;
-    }
+    getFirst(player).y -= 1
+    playerY = getFirst(player).y;
   }
 })
 
@@ -495,14 +494,8 @@ onInput("s", () => {
   // Handle movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    if (player == girl) {
-      getFirst(girl).y += 1
-      playerY = getFirst(girl).y;
-    }
-    else {
-      getFirst(boy).y += 1
-      playerY = getFirst(boy).y;
-    }
+    getFirst(player).y += 1
+    playerY = getFirst(player).y;
   }
 })
 
@@ -520,14 +513,8 @@ onInput("a", () => {
   // Control movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    if (player == girl) {
-      getFirst(girl).x -= 1
-      playerX = getFirst(girl).x;
-    }
-    else {
-      getFirst(boy).x -= 1
-      playerX = getFirst(boy).x;
-    }
+    getFirst(player).x -= 1
+    playerX = getFirst(player).x;
   }
 })
 
@@ -545,14 +532,8 @@ onInput("d", () => {
   // Control movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    if (player == girl) {
-      getFirst(girl).x += 1
-      playerX = getFirst(girl).x;
-    }
-    else {
-      getFirst(boy).x += 1
-      playerX = getFirst(boy).x;
-    }
+    getFirst(player).x += 1
+    playerX = getFirst(player).x;
   }
 })
 
