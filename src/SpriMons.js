@@ -11,16 +11,17 @@
 const boy = 'b';
 const girl = 'g';
 const orpheus = 'o';
+const hakkuun = 'h';
 // Boxes
 const box = 'd';
-const selectionBox = 's'
+const selectionBox = 's';
 
 // Overworld tiles
-const grass = 'q'
-const crate = 'c'
-const earth = 'e'
-const tallGrass = 't'
-const ticket = 'v'
+const grass = 'q';
+const crate = 'c';
+const earth = 'e';
+const tallGrass = 't';
+const ticket = 'v';
 
 const girlGraphics = bitmap`
 ....00000000....
@@ -38,7 +39,7 @@ const girlGraphics = bitmap`
 ...0575555750...
 ...0777007770...
 ...0110..0110...
-....00....00....`
+....00....00....`;
 const boyGraphics = bitmap`
 ....00000000....
 ...0333333330...
@@ -55,17 +56,15 @@ const boyGraphics = bitmap`
 ...0575555750...
 ...0777007770...
 ...0550..0550...
-....00....00....`
+....00....00....`;
 
-let player = 'x';
-let gender = 'b'
+let player = '';
 
 
 setLegend(
   // Dialog and general
   [ boy, boyGraphics ],
   [ girl, girlGraphics],
-  [ player, boyGraphics],
   [ orpheus, bitmap`
 ...000000.......
 ...0222220......
@@ -117,6 +116,23 @@ setLegend(
 0..............0
 0..............0
 0000000000000000`],
+  [ hakkuun, bitmap`
+...L.LLLLLL.L...
+..L1L111111L1L..
+...LL020020LL...
+....L020020L....
+....L111111L....
+.....L1111L.....
+......LLLL......
+.....L1111L..LLL
+....L111111L.L0L
+...L1L1111L1L11L
+....LL1111LL000L
+.....L1111L101L.
+.....L1111L101L.
+....LL1LL1LLLL..
+...L11L..L11L...
+....LL....LL....`],
   
   // Overworld
   [ grass, bitmap`
@@ -204,53 +220,54 @@ D4DD4D4D444D4D44
 ....83388338....
 .....88..88.....
 ................`]
-)
+);
 
 // Player's position
-let playerX = 1
-let playerY = 1
-let autoMap = []
+let playerX = 1;
+let playerY = 1;
+let autoMap = [];
+let movement = true;
 
 // ---------------------------------- Helper functions ----------------------------------
 // Prepare the map
 function createMap() {
-  var map = []
+  var map = [];
   // Get every tile of the current map, save them in the variable
   for (let i = 0; i < height(); i++) {
-    map.push([])
+    map.push([]);
 
     for (let j = 0; j < width(); j++) {
-      map[i].push([])
+      map[i].push([]);
 
       // Go through each of the sprites that are in this place and insert them
       let sprites = getTile(j, i)
       for (let k = 0; k < sprites.length; k++)
-        map[i][j].push(sprites[k].type)
+        map[i][j].push(sprites[k].type);
     }
   }
 
-  return map
+  return map;
 }
 
 // Set the current map to the given one
 function setCurrentMap(map) {
-  var tempMap = ""
+  var tempMap = "";
   // Get structure of the map
   for (let i = 0; i < map.length; i++) {
     for (let j = 0; j < map[i].length; j++) {
-      tempMap += '.'
+      tempMap += '.';
     }
-    tempMap += '\n'
+    tempMap += '\n';
   }
 
   // Set the map
-  setMap(tempMap)
+  setMap(tempMap);
 
   // Add sprites to it
   for (let i = 0; i < map.length; i++) {
     for (let j = 0; j < map[i].length; j++) {
       for (let k = 0; k < map[i][j].length; k++) {
-        addSprite(j, i, map[i][j][k])
+        addSprite(j, i, map[i][j][k]);
       }
     }
   }
@@ -259,34 +276,34 @@ function setCurrentMap(map) {
 // Setup the map, so it sticks to the player
 function setupMap(posX, posY, width, height, map) {
   // Get dimensions
-  var secondMap = []
-  let mapWidth = map[0].length
-  let mapHeight = map.length
+  var secondMap = [];
+  let mapWidth = map[0].length;
+  let mapHeight = map.length;
 
-  posX = Math.max(Math.min(mapWidth - width, posX), 0)
-  posY = Math.max(Math.min(mapHeight - height, posY), 0)
+  posX = Math.max(Math.min(mapWidth - width, posX), 0);
+  posY = Math.max(Math.min(mapHeight - height, posY), 0);
 
   // Build the new map only from the given range
   for (let i = 0; i < height; i++) {
-    secondMap.push([])
+    secondMap.push([]);
     for (let j = 0; j < width; j++) {
-      secondMap[i].push([])
+      secondMap[i].push([]);
 
       for (var k = 0; k < map[i+posY][j+posX].length; k++) {
-        secondMap[i][j].push(map[i+posY][j+posX][k])
+        secondMap[i][j].push(map[i+posY][j+posX][k]);
       }
     }
   }
 
-  return secondMap
+  return secondMap;
 }
 
 
 // Write the correct dialogue line, depending on the argument
 function startDialogue(line, choice, select, chose) {
-  let text = ""
-  clearTile(1, 2)
-  clearTile(7, 2)
+  let text = "";
+  clearTile(1, 2);
+  clearTile(7, 2);
   
   // Set the correct text
   switch(line) {
@@ -294,58 +311,57 @@ function startDialogue(line, choice, select, chose) {
       text = "Welcome to the\nHack Club's\nWorld!";
       break;
     case 1:
-      text = "Here we take care \nof SpriMons,\ntrain them\nand battle along\nwith them"
+      text = "Here we take care \nof SpriMons,\ntrain them\nand battle along\nwith them";
       break;
     case 2:
-      text = "Everything was\nfun and all, but\nsomeone fed\nHakkuun some\nsleeping pills!"
+      text = "Everything was\nfun and all, but\nsomeone fed\nHakkuun some\nsleeping pills!";
       break;
     case 3:
-      text = "Arcade cannot\ncontinue without\nher!\nYou must\nsave this event!"
+      text = "Arcade cannot\ncontinue without\nher!\nYou must\nsave this event!";
       break;
     case 4:
-      text = "You can do this,\nby finding enough\ntickets.\nWe need them to\nwake her up!"
+      text = "You can do this,\nby finding enough\ntickets.\nWe need them to\nwake her up!";
       break;
     case 5:
-      text = "When she will\nsmell them, she\nwill wake up\nfor sure!"
+      text = "When she will\nsmell them, she\nwill wake up\nfor sure!";
       break;
     case 6:
-      text = "Go on!\nYou must save us!"
+      text = "Go on!\nYou must save us!";
       break;
     case 7:
-      text = "Ah, I forgot!\nAre you a boy\nor a girl?"
-      choice[0] = true
+      text = "Ah, I forgot!\nAre you a boy\nor a girl?";
+      choice[0] = true;
       
       // Draw the choices
-      addSprite(1, 2, boy)
-      addSprite(7, 2, girl)
+      addSprite(1, 2, boy);
+      addSprite(7, 2, girl);
 
       // Draw selection box on top of the current gender, select it
       if (select == 0) {
-        addSprite(1, 2, selectionBox)
-        gender = boy
-        player.type = boy
+        addSprite(1, 2, selectionBox);
+        player = boy;
       }
       else {
-        addSprite(7, 2, selectionBox)
-        player.type = girl
+        addSprite(7, 2, selectionBox);
+        player = girl;
       }      
       break;
     case 8: 
-      text = "Yes...\nI remember now!\nYou are a "
-      if (gender == boy)
-        text += "boy"
+      text = "Yes...\nI remember now!\nYou are a ";
+      if (player == boy)
+        text += "boy";
       else
-        text += "girl"
+        text += "girl";
       break;
     case 9:
-      text = "Which SpriMon\nmatches your vibe\n the most?"
+      text = "Which SpriMon\nmatches your vibe\n the most?";
       break;
     case 10:
-      text = "You are our\nlast hope!\nPlease save us!"
+      text = "You are our\nlast hope!\nPlease save us!";
       break;
   }
   
-  addText(text, {x: 2, y: 9, color: 3})
+  addText(text, {x: 2, y: 9, color: 3});
 }
 
 function createOverworld() {
@@ -353,25 +369,51 @@ function createOverworld() {
   setPushables({
     [boy]: [crate],
     [girl]: [crate]
-  })
-
-  if (gender == "boy")
-    player.type == boy
-  else
-    player.type == girl
+  });
   
-  level = "Overworld"
-  state = "Overworld"
-  setMap(levels[level])
-  setBackground(earth)
+  level = "Overworld";
+  state = "Overworld";
+  setMap(levels[level]);
+  setBackground(earth);
 
-  addSprite(1, 1, player)
+  if (player == boy)
+    addSprite(1, 1, boy);
+  else
+    addSprite(1, 1, girl);
 
-  playerX = 1
-  playerY = 1
+  playerX = 1;
+  playerY = 1;
 
-  autoMap = createMap()
-  setCurrentMap(autoMap)
+  autoMap = createMap();
+  setCurrentMap(autoMap);
+}
+
+function handleAccept() {
+  if (state == "Dialogue") {
+    // Accept the choice
+    if (choice[0]) {
+      chose = true;
+    }
+    // Go to the next line
+    clearText();
+    line += 1;
+
+    if (level == "Start") {
+      // Start the overworld map
+      if (line >= 8) {
+        createOverworld();
+      }
+    }
+  }
+
+  //else if (state == "Overworld") {
+    // Handle conversation with Hakkuun
+  //  playerHakkuun = tilesWith(player, hakkuun)
+  //  if (playerHakkuun.length > 0) {
+  //    if (tickets < 8) {
+  //      addText("zzzzzzzz", {x: 2, y: 6, color: color`2`})
+  //    }
+  //}
 }
 
 
@@ -390,7 +432,7 @@ ddddddddd`,
 c...tttttt..ttttttttttttttttttttv.....
 ....tttttt..ttttttttttttttttttttt.....
 cc..tttttt..tttttttttvttttttttttt.....
-....tttttt..ttttttttttttttttttttt.....
+.h..tttttt..ttttttttttttttttttttt.....
 ....tttttt..ttttttttttttttttttttt.....
 tttt.........ccccccccc........c.......
 tttt..........................c.......
@@ -419,74 +461,52 @@ ttt.......qqtttcqq.qqqqqqccccccccccccc
 ........................cttttttttttvtt
 ........................cttttttttttttt
 ........................cttttttttttttt`,
-}
+};
 
-let level = "Start"
+let level = "Start";
 setMap(levels[level]);
 
 
 // Current state (There are 5 states of the game: Dialogue, Choice, Overworld, Battle, Menu)
-let state = "Dialogue";
+let state = "Dialogue";;
 // Current dialogue line
-let line = 0
+let line = 0;
 // Current choice
-let choice = [false]
+let choice = [false];
 // Selection index
-let select = 0
-let chose = false
+let select = 0;
+let chose = false;
 
 // Tickets count
-tickets = 0
+tickets = 0;
 
 
 // ---------------------------------- Input setup ----------------------------------
 // Dialogue input
 onInput("k", () => {
-  if (state == "Dialogue") {
-    // Accept the choice
-    if (choice[0]) {
-      chose = true
-    }
-    // Go to the next line
-    clearText()
-    line += 1
-
-    if (level == "Start") {
-      // Start the overworld map
-      if (line >= 8) {
-        createOverworld()
-      }
-    }
-  }
-})
+  handleAccept()
+});
 
 
 onInput("l", () => {
-  if (state == "Dialogue") {
-    // Accept the choice
-    if (choice[0]) {
-      chose = true
-    }
-    // Go to the next line
-    clearText()
-    line += 1
-
-    if (level == "Start") {
-      // Start the game's overworld if needed
-      if (line >= 8) {
-        createOverworld()
-      }
-    }
-  }
-})
+  handleAccept()
+});
 
 
 onInput("w", () => {
   // Handle movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    getFirst(player).y -= 1
-    playerY = getFirst(player).y;
+    if (player == girl) {
+      getFirst(girl).y -= 1;
+      playerY = getFirst(girl).y;
+    }
+    else {
+      getFirst(boy).y -= 1;
+      playerY = getFirst(boy).y;
+    }
+
+    movement = true
   }
 })
 
@@ -494,8 +514,16 @@ onInput("s", () => {
   // Handle movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    getFirst(player).y += 1
-    playerY = getFirst(player).y;
+    if (player == girl) {
+      getFirst(girl).y += 1;
+      playerY = getFirst(girl).y;
+    }
+    else {
+      getFirst(boy).y += 1;
+      playerY = getFirst(boy).y;
+    }
+
+    movement = true
   }
 })
 
@@ -504,17 +532,25 @@ onInput("a", () => {
   // Handle player choosing
   if (state == "Dialogue") {
     if (level == "Start") {
-      select -= 1
+      select -= 1;
       if (select < 0) 
-        select = 0
+        select = 0;
     }
   }
 
   // Control movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    getFirst(player).x -= 1
-    playerX = getFirst(player).x;
+    if (player == girl) {
+      getFirst(girl).x -= 1;
+      playerX = getFirst(girl).x;
+    }
+    else {
+      getFirst(boy).x -= 1;
+      playerX = getFirst(boy).x;
+    }
+
+    movement = true
   }
 })
 
@@ -523,17 +559,25 @@ onInput("d", () => {
   if (state == "Dialogue") {
     if (level == "Start") {
       
-      select += 1
+      select += 1;
       if (select > 1) 
-        select = 1
+        select = 1;
     }
   }
 
   // Control movement
   if (state == "Overworld") {
     setCurrentMap(autoMap);
-    getFirst(player).x += 1
-    playerX = getFirst(player).x;
+    if (player == girl) {
+      getFirst(girl).x += 1;
+      playerX = getFirst(girl).x;
+    }
+    else {
+      getFirst(boy).x += 1;
+      playerX = getFirst(boy).x;
+    }
+
+    movement = true
   }
 })
 
@@ -543,36 +587,40 @@ afterInput(() => {
   if (state == "Dialogue") {
     // Start the beginning dialogue
     if (level == "Start") {
-      startDialogue(line, choice, select, chose)
+      startDialogue(line, choice, select, chose);
     }
   }
 
   else if (level == "Overworld") {
-    clearText()
-    text = "Tickets: " + tickets.toString()
-    addText(text, {x: 9, y: 0, color: color`2`})
+    clearText();
+    text = "Tickets: " + tickets.toString();
+    addText(text, {x: 9, y: 0, color: color`2`});
     
     // Make player able to collect tickets
-    playerTickets = tilesWith(player, ticket)
+    playerTickets = tilesWith(player, ticket);
     
     if (playerTickets.length > 0) {
-      tickets += 1
-      tiles = getAll(ticket)
+      tickets += 1;
+      tiles = getAll(ticket);
       
       for (let i = 0; i < tiles.length; i++) {
         if (Math.abs(tiles[i].x - playerX) < 5) {
           if (Math.abs(tiles[i].y - playerY) < 5)
-            tiles[i].remove()
+            tiles[i].remove();
         }
       }
     }
 
-    // Update the camera position
-    autoMap = createMap();
-    setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap))
+    if (movement) {
+      // Update the camera position
+      autoMap = createMap();
+      setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap));
+    }
+
+    movement = false
   }
 })
 
 
 // ---------------------------------- Start the game ----------------------------------
-startDialogue(line, choice, select, chose)
+startDialogue(line, choice, select, chose);
