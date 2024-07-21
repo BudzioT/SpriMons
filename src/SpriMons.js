@@ -20,17 +20,17 @@ const gitbon = 'n';
 
 const spriMonsData = { 
   orpheus: { "HP": 10, "SP": 5, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1,"EXP": 50, 
-            "DROP": 35},
+            "DROP": 35, "NAME1": "Punch", "NAME2": "Scratch", "NICKNAME": "Orpheus"},
   hakkuun: { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1, "EXP": 45, 
-            "DROP": 40},
+            "DROP": 40, "NAME1": "Swipe", "NAME2": "Scratch", "NICKNAME": "Hakkuun"},
   hackMon: { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1, "EXP": 50, 
-            "DROP": 45},
+            "DROP": 45, "NAME1": "Code", "NAME2": "Break", "NICKNAME": "HackMon"},
   sprigus: { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2, "EXP": 30, 
-            "DROP": 50},
+            "DROP": 50, "NAME1": "Push", "NAME2": "Jump", "NICKNAME": "Sprigus"},
   raspberin: { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2, "EXP": 40, 
-              "DROP": 45},
+              "DROP": 45, "NAME1": "Beep", "NAME2": "Light", "NICKNAME": "RASPBERIN"},
   gitbon: { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, "EXP": 45, 
-              "DROP": 50}
+              "DROP": 50, "NAME1": "Push", "NAME2": "Pull", "NICKNAME": "GITBON"}
 };
   
 // Boxes
@@ -84,9 +84,15 @@ let player = '';
 let opponents = [orpheus, hackMon, sprigus, raspberin, gitbon];
 
 let opponent = '';
+let opponentStats = {};
 let opponentLevel = 1;
+let opponentHp = 0;
+
+
 let spriMon = '';
 let exp = 0;
+let stats = {};
+let hp = 0;
 
 
 setLegend(
@@ -338,6 +344,8 @@ D4DD4D4D444D4D44
 // Player's position
 let playerX = 1;
 let playerY = 1;
+let lastPlayerX = playerX;
+let lastPlayerY = playerY;
 let autoMap = [];
 
 let movement = true;
@@ -616,8 +624,39 @@ function handleAccept() {
 
 // Handle battle system
 function Battle() {
-  addSprite(7, 2, opponent)
-  addSprite(7, 5, spriMon)
+  // Set the scene
+  level = "Battle";
+  state = "Battle";
+  setBackground(box);
+  setMap(levels[level]);
+
+  playerX = 1;
+  playerY = 1;
+
+  // Add sprites
+  addSprite(6, 3, opponent)
+  addSprite(6, 6, spriMon)
+  // Set the map
+  autoMap = createMap();
+  setCurrentMap(autoMap);
+
+  // Give proper statistics
+  opponentStats = spriMonsData[opponent]
+  stats = spriMonsData[spriMon]
+
+  for (let stat in opponentStats) {
+    opponentStats[stat] *= (level * 1.5)
+    stats[stat] *= (level * 1.5)
+  }
+
+  hp = stats["HP"]
+  opponentHp = opponentStats["HP"]
+
+  BattleText()
+}
+
+function BattleText() {
+  addText(opponentsStats["NICKNAME"], {x: 3, y: 3, color: color`2`})
 }
 
 
@@ -738,6 +777,7 @@ onInput("w", () => {
       getFirst(boy).y -= 1;
       playerY = getFirst(boy).y;
     }
+    lastPlayerY = playerY;
 
     movement = true
   }
@@ -755,6 +795,7 @@ onInput("s", () => {
       getFirst(boy).y += 1;
       playerY = getFirst(boy).y;
     }
+    lastPlayerY = playerY;
 
     movement = true
   }
@@ -782,6 +823,7 @@ onInput("a", () => {
       getFirst(boy).x -= 1;
       playerX = getFirst(boy).x;
     }
+    lastPlayerX = playerX;
 
     movement = true
   }
@@ -815,6 +857,7 @@ onInput("d", () => {
       getFirst(boy).x += 1;
       playerX = getFirst(boy).x;
     }
+    lastPlayerX = playerX;
 
     movement = true
   }
@@ -866,14 +909,8 @@ afterInput(() => {
       if (chance < 0.1) {
         opponent = opponents[Math.floor(Math.random() * opponents.length)]
         opponentLevel = Math.floor(Math.random() * spriMonLevel + 1)
-
+        
         clearText()
-
-        level = "Battle";
-        state = "Battle";
-        setBackground(box);
-        setMap(levels[level]);
-
         Battle()
         return;
       }
