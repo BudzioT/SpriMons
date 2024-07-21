@@ -10,10 +10,30 @@
 // Character sprites
 const boy = 'b';
 const girl = 'g';
+
 const orpheus = 'o';
+const orpheusData = { "HP": 10, "SP": 5, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1,
+                    "EXP": 50, "DROP": 35};
+
 const hakkuun = 'h';
+const hakkuunData = { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1,
+                    "EXP": 45, "DROP": 40};
+
 const hackMon = 'm';
+const hackMonData = { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1,
+                    "EXP": 50, "DROP": 45};
+
 const sprigus = 'u';
+const sprigusData = { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2,
+                    "EXP": 30, "DROP": 50};
+
+const raspberin = 'r';
+const raspberinData = { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2,
+                      "EXP": 40, "DROP": 45}
+
+const gubon = 'n';
+const gubonData = { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, 
+                  "EXP": 45, "DROP": 50}
 // Boxes
 const box = 'd';
 const selectionBox = 's';
@@ -62,6 +82,7 @@ const boyGraphics = bitmap`
 ....00....00....`;
 
 let player = '';
+let opponents = [orpheus, hackMon, sprigus, raspberin, gubon]
 
 
 setLegend(
@@ -186,7 +207,24 @@ DDDD2DDDDD2DDDDD
 ....00133100....
 ......0000......
 ................
-................`]
+................`],
+  [ gubon, bitmap`
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................` ],
   
   // Overworld
   [ grass, bitmap`
@@ -298,8 +336,10 @@ let playerX = 1;
 let playerY = 1;
 let autoMap = [];
 
+let spriMon = '';
+
 let movement = true;
-let hakkuunInteraction = false
+let hakkuunInteraction = false;
 
 let maxLine = 12;
 let maxHakkuunLine = 5;
@@ -379,6 +419,9 @@ function setupMap(posX, posY, width, height, map) {
 function startDialogue(line, choice, select, chose) {
   let text = "";
   clearTile(1, 2);
+  clearTile(2, 2);
+  clearTile(3, 2);
+  clearTile(5, 2);
   clearTile(7, 2);
   
   // Set the correct text
@@ -407,6 +450,7 @@ function startDialogue(line, choice, select, chose) {
     case 7:
       text = "Ah, I forgot!\nAre you a boy\nor a girl?";
       choice[0] = true;
+      choice[1] = false;
       
       // Draw the choices
       addSprite(1, 2, boy);
@@ -431,6 +475,25 @@ function startDialogue(line, choice, select, chose) {
       break;
     case 9:
       text = "Which SpriMon\nmatches your vibe\nthe most?";
+      choice[0] = false
+      choice[1] = true;
+      
+      addSprite(1, 2, hackMon)
+      addSprite(2, 2, raspberin)
+      addSprite(3, 2, sprigus)
+      
+      if (select == 0) {
+        addSprite(1, 2, selectionBox)
+        spriMon = hackMon
+      }
+      else if (select == 1) {
+        addSprite(2, 2, selectionBox)
+        spriMon = raspberin
+      }
+      else {
+        addSprite(3, 2, selectionBox)
+        spriMon = sprigus
+      }
       break;
     case 10:
       text = "You are our\nlast hope!\nPlease save us!";
@@ -513,11 +576,18 @@ function handleAccept() {
     if (choice[0]) {
       chose = true;
     }
+
+    if (choice[1]) {
+      chose = true;
+    }
     // Go to the next line
     clearText();
     line += 1;
 
     if (level == "Start") {
+      if (line == 8)
+        chose = false
+      
       // Start the overworld map
       if (line > maxLine) {
         createOverworld();
@@ -612,7 +682,7 @@ let state = "Dialogue";;
 // Current dialogue line
 let line = 0;
 // Current choice
-let choice = [false];
+let choice = [false, false];
 // Selection index
 let select = 0;
 let chose = false;
@@ -699,8 +769,15 @@ onInput("d", () => {
   if (state == "Dialogue") {
     if (level == "Start") {
       select += 1;
+      if (choice[0]) {
       if (select > 1) 
         select = 1;
+      }
+
+      else if (choice[1]) {
+        if (select > 2)
+          select = 2;
+      }
     }
   }
 
@@ -754,6 +831,15 @@ afterInput(() => {
         }
       }
     }
+
+    // Check if a battle should occur
+    playerGrass = tilesWith(player, tallGrass)
+    if (playerGrass.length > 0) {
+      let chance = Math.random()
+      if (chance < 0.1) {
+        let opponent = 
+      }
+    } 
 
     // Update the camera position
     if (movement) {
