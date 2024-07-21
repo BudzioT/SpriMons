@@ -382,24 +382,38 @@ ddddddddd
 ddddddddd
 ddddddddd`,
   "Overworld": map`
-qqqqqqqqqqqqqqqqqqqqqqq
-qq.....................
-qqqqqqqqqqqqqqqqqqqqqqq
-qqttqqqqqqqqqqqqqqqqqqq
-qqttq..................
-qqttt.ttttttttttttttttt
-qqttt.tttttttqqqqqqqqqq
-qqttt.tt...............
-qqttt.tt.qqqqqqqqqqqqqq
-qqtttttt.qqqqttttttttqq
-qqtttttt.qqqqttttttttqq
-qqtttvqq.qqqqttttttttqq
-qqttttqq.qqqqttt..tttqq
-qqttttqq.qqqqttt.vtttqq
-qqttt.qq.qqqqttttttttqq
-qqttt.qq.qqqqttttttttqq
-qqttt.qq.qqqqttttttttqq
-qqttt.qq.qqqqqqqqqqqqqq`,
+c...tttttt..ttttttttttttttttttttv.....
+....tttttt..ttttttttttttttttttttt.....
+cc..tttttt..tttttttttvttttttttttt.....
+....tttttt..ttttttttttttttttttttt.....
+....tttttt..ttttttttttttttttttttt.....
+tttt.........ccccccccc........c.......
+tttt..........................c.......
+tttt..................................
+tttt..................................
+vttt......qqqqqqqqqqqqqqqqqqqqqqq.....
+tttt......qqccccccccc.................
+tttt......qqqqqqqqqqqqqqqqqqqqqqq.....
+tttt......qqttqqqqqqqqqqqqqqqqqqq.....
+tttt......qqttqc......................
+..........qqttt.ttttttttttttttttt.....
+..........qqttt.tttttttqqqqqqqqqq.....
+.c.ttttt..qqttt.tt....................
+.c.ttttt..qqttt.tt.qqqqqqqqqqqqqq.....
+.c.ttvtt..qqtttttt.qqqqttttttttqq.....
+.c.ttttt..qqtttttt.qqqqttttttttqq.....
+...ttttt..qqtttvtt.qqqqttttttttqq.....
+..........qqtttttt.qqqqtttc.tttqq.....
+..........qqtttttt.qqqqttt.vtttqq.....
+.cc.......qqtttcqq.qqqqttttttttqq.....
+cttc......qqtttcqq.qqqqttttttttqq.....
+vtt.......qqtttcqq.qqqqttttttttqq.ccc.
+ttt.......qqtttcqq.qqqqqqccccccccccccc
+........................cttttttttttttt
+........................cttttttttttttt
+........................cttttttttttvtt
+........................cttttttttttttt
+........................cttttttttttttt`,
 }
 
 let level = "Start"
@@ -553,24 +567,28 @@ afterInput(() => {
   }
 
   else if (level == "Overworld") {
+    clearText()
+    text = "Tickets: " + tickets.toString()
+    addText(text, {x: 9, y: 0, color: color`2`})
+    
+    // Make player able to collect tickets
+    playerTickets = tilesWith(player, ticket)
+    
+    if (playerTickets.length > 0) {
+      tickets += 1
+      tiles = getAll(ticket)
+      
+      for (let i = 0; i < tiles.length; i++) {
+        if (Math.abs(tiles[i].x - playerX) < 5) {
+          if (Math.abs(tiles[i].y - playerY) < 5)
+            tiles[i].remove()
+        }
+      }
+    }
+
     // Update the camera position
     autoMap = createMap();
     setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap))
-
-    // Make player able to collect tickets
-    playerTickets = tilesWith(player, ticket)
-    clearText()
-    
-    if (playerTickets.length > 0) {
-      //addText(playerTickets.length.toString(), 1, 1)
-      tickets += 1
-      ticketTile = getTile(player.x, player.y)
-      addText(ticketTile.length.toString(), 1, 1)
-      for (let i = 0; i < ticketTile.length; i++) {
-        if (ticketTile[i].type == ticket)
-          ticketTile[i].remove()
-      }
-    }
   }
 })
 
