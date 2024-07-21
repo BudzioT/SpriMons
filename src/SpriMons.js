@@ -22,6 +22,7 @@ const crate = 'c';
 const earth = 'e';
 const tallGrass = 't';
 const ticket = 'v';
+const yubiKey = 'y';
 
 const girlGraphics = bitmap`
 ....00000000....
@@ -219,6 +220,23 @@ D4DD4D4D444D4D44
 ....83333338....
 ....83388338....
 .....88..88.....
+................`],
+  [ yubiKey, bitmap`
+................
+....0000000.....
+....0000000.....
+....0066600.....
+....0606060.....
+....0660660.....
+....0660660.....
+....0066600.....
+....0000000.....
+....0000000.....
+....0000000.....
+....0000000.....
+....0000000.....
+......111.......
+......111.......
 ................`]
 );
 
@@ -226,7 +244,11 @@ D4DD4D4D444D4D44
 let playerX = 1;
 let playerY = 1;
 let autoMap = [];
+
 let movement = true;
+let hakkuunInteraction = false
+
+let maxLine = 12;
 
 // ---------------------------------- Helper functions ----------------------------------
 // Prepare the map
@@ -354,13 +376,47 @@ function startDialogue(line, choice, select, chose) {
         text += "girl";
       break;
     case 9:
-      text = "Which SpriMon\nmatches your vibe\n the most?";
+      text = "Which SpriMon\nmatches your vibe\nthe most?";
       break;
     case 10:
       text = "You are our\nlast hope!\nPlease save us!";
       break;
+    case 11:
+      text = "(Not like\nI want YubiKey\nfor that 8 \ntickets)...";
+      break;
+    case 12:
+      text = "Ehem... Go now!";
+      break;
   }
   
+  addText(text, {x: 2, y: 9, color: 3});
+}
+
+function EndDialogue(line) {
+  let text = "";
+
+  switch (line) {
+    case 0:
+      text = "Huh...\n I've overslept\n a little..."
+      break;
+    case 1:
+      text = "WHAT? almost 10000\npeople are taking part of\narcade???"
+      break;
+    case 2:
+      text = "I need to\ngo back to work!\nbut thanks\nfor tickets!"
+      break;
+    case 3:
+      addSprite(6, 2, yubiKey)
+      text = "Here's\nyour reward. It is\nthe best one!"
+      break;
+    case 4:
+      text = "Use it well,\nenjoy your stay at\nHack Club!"
+      break;
+    case 5:
+      text = "This community\nwouldn't be the\nsame without\nYOU!"
+      break;
+  }
+
   addText(text, {x: 2, y: 9, color: 3});
 }
 
@@ -400,20 +456,21 @@ function handleAccept() {
 
     if (level == "Start") {
       // Start the overworld map
-      if (line >= 8) {
+      if (line > maxLine) {
         createOverworld();
       }
     }
+
+    if (level == "HakkuunConversation") {
+      // Move to the end screen
+    }
   }
 
-  //else if (state == "Overworld") {
-    // Handle conversation with Hakkuun
-  //  playerHakkuun = tilesWith(player, hakkuun)
-  //  if (playerHakkuun.length > 0) {
-  //    if (tickets < 8) {
-  //      addText("zzzzzzzz", {x: 2, y: 6, color: color`2`})
-  //    }
-  //}
+  else if (state == "Overworld") {
+    playerHakkuun = tilesWith(player, hakkuun)
+    if (playerHakkuun.length > 0)
+      hakkuunInteraction = true
+  }
 }
 
 
@@ -461,6 +518,18 @@ ttt.......qqtttcqq.qqqqqqccccccccccccc
 ........................cttttttttttvtt
 ........................cttttttttttttt
 ........................cttttttttttttt`,
+  "HakkuunConversation": map`
+.........
+.........
+....h....
+.........
+ddddddddd
+ddddddddd
+ddddddddd
+ddddddddd`,
+  "HakkuunBattle": map``,
+  "Battle": map``,
+  "End": map``
 };
 
 let level = "Start";
@@ -558,7 +627,6 @@ onInput("d", () => {
   // Handle player choosing
   if (state == "Dialogue") {
     if (level == "Start") {
-      
       select += 1;
       if (select > 1) 
         select = 1;
@@ -589,9 +657,14 @@ afterInput(() => {
     if (level == "Start") {
       startDialogue(line, choice, select, chose);
     }
+
+    // Go on with the Hakkuun conversation
+    if (level == "HakkuunConversation")
+      EndDialogue(line)
   }
 
   else if (level == "Overworld") {
+    // Write tickets count
     clearText();
     text = "Tickets: " + tickets.toString();
     addText(text, {x: 9, y: 0, color: color`2`});
@@ -611,10 +684,25 @@ afterInput(() => {
       }
     }
 
+    // Update the camera position
     if (movement) {
-      // Update the camera position
       autoMap = createMap();
       setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap));
+    }
+
+    // Interact with hakkuun
+    if (hakkuunInteraction) {
+      // Hakkuun is asleep when player doesn't have enough tickets
+      if (tickets < 8)
+        addText("zzzzzz...", {x: 1, y: 9, color: color`2`})
+      // Prepare the hakkuun conversation
+      else {
+        state = "Dialogue"
+        level = "HakkuunConversation"
+        setMap(levels[level])
+        line = 0
+      }
+      hakkuunInteraction = false
     }
 
     movement = false
