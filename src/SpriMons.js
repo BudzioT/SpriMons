@@ -83,18 +83,27 @@ const boyGraphics = bitmap`
 let player = '';
 let opponents = [orpheus, hackMon, sprigus, raspberin, gitbon];
 
+// Opponent stats
 let opponent = '';
 let opponentStats = {};
 let opponentLevel = 1;
 let opponentHp = 0;
 let opponentSp = 0;
 
-
+// Starter SpriMon stats
 let spriMon = '';
+let spriMonLevel = 1;
 let exp = 0;
 let stats = {};
 let hp = 0;
 let sp = 0;
+
+// Battle flags
+let action = false;
+let enemyTurn = false;
+let attack = false;
+let rest = false;
+let enemyRest = false;
 
 
 setLegend(
@@ -648,13 +657,15 @@ function Battle() {
 
   for (let stat in opponentStats) {
     if (typeof opponentStats[stat] == 'number') {
-      opponentStats[stat] *= (opponentLevel * 1.5);
+      if (stat != "COST1" && stat != "COST2")
+        opponentStats[stat] *= (opponentLevel * 1.3);
     }
   }
 
   for (let stat in stats) {
     if (typeof stats[stat] === 'number') {
-      stats[stat] *= (spriMonLevel * 1.5);
+      if (stat != "COST1" && stat != "COST2")
+        stats[stat] *= (spriMonLevel * 1.3);
     }
   }
 
@@ -667,23 +678,94 @@ function Battle() {
   BattleText();
 }
 
+// Write the basic battle info
 function BattleText() {
-  addText(opponentStats["NICKNAME"], {x: 8, y: 3, color: color`2`});
-  addText("HP: " + opponentHp, {x: 0, y: 3, color: color`3`});
-  addText("SP: " + opponentSp, {x: 0, y: 5, color: color`7`});
-  addText(opponentLevel + '', {x: 18, y: 3, color: color`2`});
+  addText(opponentStats["NICKNAME"], {x: 8, y: 2, color: color`2`});
+  addText("HP: " + opponentHp, {x: 0, y: 2, color: color`3`});
+  addText("SP: " + opponentSp, {x: 0, y: 4, color: color`7`});
+  addText(opponentLevel + '', {x: 18, y: 2, color: color`2`});
   
-  addText(stats["NICKNAME"], {x: 8, y: 8, color: color`2`});
-  addText("HP: " + hp, {x: 0, y: 8, color: color`3`});
-  addText("SP: " + sp, {x: 0, y: 10, color: color`7`});
-  addText(spriMonLevel + '', {x: 18, y: 8, color: color`2`});
+  addText(stats["NICKNAME"], {x: 8, y: 7, color: color`2`});
+  addText("HP: " + hp, {x: 0, y: 7, color: color`3`});
+  addText("SP: " + sp, {x: 0, y: 9, color: color`7`});
+  addText(spriMonLevel + '', {x: 18, y: 7, color: color`2`});
   
-  addText(stats["NAME1"] + '', {x: 1, y: 13, color: color`4`});
-  addText(stats["NAME2"] + '', {x: 10, y: 13, color: color`4`});
+  addText(stats["NAME1"] + '', {x: 1, y: 12, color: color`4`});
+  addText(stats["NAME2"] + '', {x: 10, y: 12, color: color`4`});
 }
 
+// Handle the battle's process
 function BattleOngoing() {
-  
+  clearText()
+
+  // If there was an attempt to make a attack
+  if (attack) {
+    // Turn the flags
+    attack = false;
+    action = true;
+    enemyTurn = true;
+    
+    text = '';
+    // Rest if there isn't any stamina
+    if (Math.floor(sp) <= 0) {
+      rest = true;
+      sp += Math.floor(Math.random() * stats["SP"] / 10 + 1)
+      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + stats["SP"] + " SP";
+    }
+    // Make the first attack
+    else if (attack == 1) {
+      if (sp > stats["COST1"]) {
+        opponentHp -= stats["DMG1"];
+        sp -= stats["COST1"];
+        text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME1"] + "\ndealing" 
+          + stats["DMG1"] + "dmg!";
+      }
+    }
+    // Use the second attack
+    else {
+      if (sp > stats["COST2"]) {
+        opponentHp -= stats["DMG2"];
+        sp -= stats["COST2"];
+        text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME2"] + "\ndealing" 
+          + stats["DMG2"] + "dmg!";
+      }
+    }
+  }
+
+  // Handle enemy's actions
+  else if (enemyTurn) {
+    enemyTurn = false;
+    action = true;
+
+    text = '';
+     if (Math.floor(opponentSp) <= 0) {
+      opponentRest = true;
+      opponentSp += Math.floor(Math.random() * opponentStats["SP"] / 10 + 1)
+      text = "Wild " + opponentStats["NICKNAME"] + 
+        "\nrests and regains\n" + opponentStats["SP"] + " SP";
+    }
+
+    else if (attack == 1) {
+      if (opponentSp > stats["COST1"]) {
+        hp -= stats["DMG1"];
+        opponentSp -= stats["COST1"];
+        text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
+          + opponentStats["NAME1"] + "\ndealing" + opponentStats["DMG1"] + "dmg!";
+      }
+    }
+
+    // Use the second attack
+    else {
+      if (sp > stats["COST2"]) {
+        hp -= stats["DMG2"];
+        opponentSp -= opponentStats["COST2"];
+        text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
+          + opponentStats["NAME2"] + "\ndealing" + opponentStats["DMG2"] + "dmg!";
+      }
+    }
+  }
+
+  setText(text, {x: 1, y: 12, color: color`F`})
 }
 
 
@@ -776,8 +858,6 @@ let chose = false;
 
 // Tickets count
 let tickets = 0;
-
-let spriMonLevel = 0;
 
 
 // ---------------------------------- Input setup ----------------------------------
