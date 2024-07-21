@@ -12,6 +12,8 @@ const boy = 'b';
 const girl = 'g';
 const orpheus = 'o';
 const hakkuun = 'h';
+const hackMon = 'm';
+const sprigus = 'u';
 // Boxes
 const box = 'd';
 const selectionBox = 's';
@@ -134,6 +136,57 @@ setLegend(
 ....LL1LL1LLLL..
 ...L11L..L11L...
 ....LL....LL....`],
+  [ hackMon, bitmap`
+.22222222222222.
+8888888888888888
+8888288888888888
+7777277777777777
+0000200000000000
+0000200000000000
+CCCC2C222CCCCCCC
+9999229992999999
+9999299999299999
+6666266666266666
+DDDD2DDDDD2DDDDD
+DDDD2DDDDD2DDDDD
+4444244444244444
+5555255555255555
+5555555555555555
+.HHHHHHHHHHHHHH.`],
+  [ sprigus, bitmap`
+................
+................
+........444.....
+.......4DD4.....
+......44D4......
+......2222......
+....22000022....
+....20000002....
+....20200202....
+....20200202....
+....20000002....
+....22000022....
+.....222222.....
+......2..2......
+.....22..22.....
+................`],
+  [ raspberin, bitmap`
+...000....000...
+..04440..04440..
+..044DD00DD440..
+...0000000000...
+....03133130....
+...0331331330...
+..031103301130..
+..033301103330..
+..013313313310..
+..031301103130..
+..013330033310..
+...0333113330...
+....00133100....
+......0000......
+................
+................`]
   
   // Overworld
   [ grass, bitmap`
@@ -249,6 +302,7 @@ let movement = true;
 let hakkuunInteraction = false
 
 let maxLine = 12;
+let maxHakkuunLine = 5;
 
 // ---------------------------------- Helper functions ----------------------------------
 // Prepare the map
@@ -400,20 +454,20 @@ function EndDialogue(line) {
       text = "Huh...\n I've overslept\n a little..."
       break;
     case 1:
-      text = "WHAT? almost 10000\npeople are taking part of\narcade???"
+      text = "WHAT? almost \n10000 people\nare taking\n part of\nArcade???"
       break;
     case 2:
       text = "I need to\ngo back to work!\nbut thanks\nfor tickets!"
       break;
     case 3:
       addSprite(6, 2, yubiKey)
-      text = "Here's\nyour reward. It is\nthe best one!"
+      text = "Here's\nyour reward. It's\nthe best one!"
       break;
     case 4:
-      text = "Use it well,\nenjoy your stay at\nHack Club!"
+      text = "Use it well,\nenjoy your stay\n\nat Hack Club!"
       break;
     case 5:
-      text = "This community\nwouldn't be the\nsame without\nYOU!"
+      text = "This community\nwouldn't be the\nsame without\n\nYOU!"
       break;
   }
 
@@ -444,6 +498,15 @@ function createOverworld() {
   setCurrentMap(autoMap);
 }
 
+function endScreen() {
+  level = "End"
+  state = "End"
+  setMap(levels[level])
+  setBackground(earth)
+
+  addText("Have fun building!\n\nWE LOVE Hack Club!", {x: 1, y: 8, color: color`2`});
+}
+
 function handleAccept() {
   if (state == "Dialogue") {
     // Accept the choice
@@ -463,6 +526,9 @@ function handleAccept() {
 
     if (level == "HakkuunConversation") {
       // Move to the end screen
+      if (line > maxHakkuunLine) {
+        endScreen();
+      }
     }
   }
 
@@ -529,14 +595,19 @@ ddddddddd
 ddddddddd`,
   "HakkuunBattle": map``,
   "Battle": map``,
-  "End": map``
+  "End": map`
+yyyyyy
+yhobgy
+......
+......
+yyyyyy`
 };
 
 let level = "Start";
 setMap(levels[level]);
 
 
-// Current state (There are 5 states of the game: Dialogue, Choice, Overworld, Battle, Menu)
+// Current state (There are 5 states of the game: Dialogue, Menu, Overworld, Battle, End)
 let state = "Dialogue";;
 // Current dialogue line
 let line = 0;
@@ -693,7 +764,7 @@ afterInput(() => {
     // Interact with hakkuun
     if (hakkuunInteraction) {
       // Hakkuun is asleep when player doesn't have enough tickets
-      if (tickets < 8)
+      if (tickets < 1)
         addText("zzzzzz...", {x: 1, y: 9, color: color`2`})
       // Prepare the hakkuun conversation
       else {
@@ -701,6 +772,7 @@ afterInput(() => {
         level = "HakkuunConversation"
         setMap(levels[level])
         line = 0
+        select = 0
       }
       hakkuunInteraction = false
     }
