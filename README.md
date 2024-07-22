@@ -10,6 +10,18 @@ Save the event by collecting enough tickets and giving them to Hakkuun, who's fa
 Watch out though, she might be angry that you woken her up...<br>
 Train your SpriMon, defeat the wild ones, be the best trainer in the entire Hack Club!
 
+## :camera:Screenshots
+- ![image](https://github.com/user-attachments/assets/cf785973-2fc1-4dc3-a057-5d13dac6311d)
+<br>
+
+- ![image](https://github.com/user-attachments/assets/9e858da5-e5ff-4825-b6af-50f55524120c)
+
+<br>
+
+- ![image](https://github.com/user-attachments/assets/6c80b16b-b172-4a7b-8a6f-d1157682bcd9)
+
+
+
 ## :video_game: Controls
 - Next Dialog Line, Interact: K, L
 - Choose an option: A, D
