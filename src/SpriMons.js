@@ -101,9 +101,10 @@ let sp = 0;
 // Battle flags
 let action = false;
 let enemyTurn = false;
-let attack = false;
+let attack = 0;
 let rest = false;
 let enemyRest = false;
+let loadBattle = true;
 
 
 setLegend(
@@ -634,7 +635,7 @@ function handleAccept() {
 }
 
 // Handle battle system
-function Battle() {
+function battle() {
   // Set the scene
   level = "Battle";
   state = "Battle";
@@ -675,11 +676,14 @@ function Battle() {
   opponentHp = Math.round(opponentStats["HP"]);
   opponentSp = Math.round(opponentStats["SP"]);
 
-  BattleText();
+  loadBattle = false;
+
+  battleText();
+  movesText();
 }
 
 // Write the basic battle info
-function BattleText() {
+function battleText() {
   addText(opponentStats["NICKNAME"], {x: 8, y: 2, color: color`2`});
   addText("HP: " + opponentHp, {x: 0, y: 2, color: color`3`});
   addText("SP: " + opponentSp, {x: 0, y: 4, color: color`7`});
@@ -689,52 +693,70 @@ function BattleText() {
   addText("HP: " + hp, {x: 0, y: 7, color: color`3`});
   addText("SP: " + sp, {x: 0, y: 9, color: color`7`});
   addText(spriMonLevel + '', {x: 18, y: 7, color: color`2`});
-  
+}
+
+// Write names of the player's spriMon moves
+function movesText() {
   addText(stats["NAME1"] + '', {x: 1, y: 12, color: color`4`});
   addText(stats["NAME2"] + '', {x: 10, y: 12, color: color`4`});
 }
 
 // Handle the battle's process
-function BattleOngoing() {
+function battleOnGoing() {
   clearText()
 
   // If there was an attempt to make a attack
-  if (attack) {
+  if (attack && !action) {
     // Turn the flags
     attack = false;
     action = true;
-    enemyTurn = true;
     
     text = '';
     // Rest if there isn't any stamina
     if (Math.floor(sp) <= 0) {
       rest = true;
       sp += Math.floor(Math.random() * stats["SP"] / 10 + 1)
-      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + stats["SP"] + " SP";
+      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + Math.floor(stats["SP"]) 
+        + " SP";
     }
     // Make the first attack
     else if (attack == 1) {
       if (sp > stats["COST1"]) {
         opponentHp -= stats["DMG1"];
         sp -= stats["COST1"];
-        text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME1"] + "\ndealing" 
-          + stats["DMG1"] + "dmg!";
+        text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME1"] + "\ndealing " 
+          + Math.floor(stats["DMG1"]) + " dmg!";
       }
     }
     // Use the second attack
-    else {
+    else if (attack == 2) {
       if (sp > stats["COST2"]) {
         opponentHp -= stats["DMG2"];
         sp -= stats["COST2"];
-        text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME2"] + "\ndealing" 
-          + stats["DMG2"] + "dmg!";
+        text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME2"] + "\ndealing " 
+          + Math.floor(stats["DMG2"]) + " dmg!";
       }
     }
+
+    else {
+      rest = true;
+      sp += Math.floor(Math.random() * stats["SP"] / 10 + 1)
+      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + Math.floor(stats["SP"])
+        + " SP";
+    }
+
+    // Set correct stats
+    hp = Math.round(spriMonsData[spriMon]["HP"]);
+    sp = Math.round(spriMonsData[spriMon]["SP"]);
+    opponentHp = Math.round(opponentStats["HP"]);
+    opponentSp = Math.round(opponentStats["SP"]);
+
+    clearText();
+    addText(text, {x: 1, y: 12, color: color`6`})
   }
 
   // Handle enemy's actions
-  else if (enemyTurn) {
-    enemyTurn = false;
+  else if (enemyTurn && !action) {
     action = true;
 
     text = '';
@@ -742,30 +764,63 @@ function BattleOngoing() {
       opponentRest = true;
       opponentSp += Math.floor(Math.random() * opponentStats["SP"] / 10 + 1)
       text = "Wild " + opponentStats["NICKNAME"] + 
-        "\nrests and regains\n" + opponentStats["SP"] + " SP";
+        "\nrests and regains\n" + Math.floor(opponentStats["SP"]) + " SP";
     }
 
-    else if (attack == 1) {
+    enemyTurn = Math.floor(Math.random() * 2) + 1;
+
+    else if (enemyTurn == 1) {
       if (opponentSp > stats["COST1"]) {
-        hp -= stats["DMG1"];
-        opponentSp -= stats["COST1"];
+        hp -= Math.floor(stats["DMG1"]);
+        opponentSp -= Math.floor(opponentStats["COST1"]);
         text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
-          + opponentStats["NAME1"] + "\ndealing" + opponentStats["DMG1"] + "dmg!";
+          + opponentStats["NAME1"] + "\ndealing " + Math.floor(opponentStats["DMG1"]) 
+          + " dmg!";
       }
     }
 
     // Use the second attack
-    else {
+    else if (enemyTurn == 2) {
       if (sp > stats["COST2"]) {
-        hp -= stats["DMG2"];
-        opponentSp -= opponentStats["COST2"];
+         hp -= Math.floor(stats["DMG2"]);
+        opponentSp -= Math.floor(opponentStats["COST2"]);
         text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
-          + opponentStats["NAME2"] + "\ndealing" + opponentStats["DMG2"] + "dmg!";
+          + opponentStats["NAME2"] + "\ndealing " + Math.floor(opponentStats["DMG2"]) 
+          + " dmg!";
       }
     }
+
+    else {
+      opponentRest = true;
+      opponentSp += Math.floor(Math.random() * opponentStats["SP"] / 10 + 1);
+      text = "Wild " + opponentStats["NICKNAME"] + 
+        "\nrests and regains\n" + Math.floor(opponentStats["SP"]) + " SP";
+    }
+
+    // Set correct stats
+    hp = Math.round(spriMonsData[spriMon]["HP"]);
+    sp = Math.round(spriMonsData[spriMon]["SP"]);
+    opponentHp = Math.round(opponentStats["HP"]);
+    opponentSp = Math.round(opponentStats["SP"]);
+
+    clearText();
+    addText(text, {x: 1, y: 12, color: color`6`})
+
+    enemyTurn = false;
   }
 
-  setText(text, {x: 1, y: 12, color: color`F`})
+  else if (!attack && action) {
+      battleText();
+      enemyTurn = true;
+      action = false;
+  }
+
+  else if (!enemyTurn && action) {
+    battleText();
+    movesText();
+    action = false;
+  }
+  
 }
 
 
@@ -863,12 +918,12 @@ let tickets = 0;
 // ---------------------------------- Input setup ----------------------------------
 // Dialogue input
 onInput("k", () => {
-  handleAccept()
+  handleAccept();
 });
 
 
 onInput("l", () => {
-  handleAccept()
+  handleAccept();
 });
 
 
@@ -886,7 +941,7 @@ onInput("w", () => {
     }
     lastPlayerY = playerY;
 
-    movement = true
+    movement = true;
   }
 })
 
@@ -904,7 +959,7 @@ onInput("s", () => {
     }
     lastPlayerY = playerY;
 
-    movement = true
+    movement = true;
   }
 })
 
@@ -932,7 +987,13 @@ onInput("a", () => {
     }
     lastPlayerX = playerX;
 
-    movement = true
+    movement = true;
+  }
+
+  // Handle choosing attack in battle
+  if (state == "Battle") {
+    if (!action)
+      attack = 1;
   }
 })
 
@@ -954,7 +1015,7 @@ onInput("d", () => {
   }
 
   // Control movement
-  if (state == "Overworld") {
+  else if (state == "Overworld") {
     setCurrentMap(autoMap);
     if (player == girl) {
       getFirst(girl).x += 1;
@@ -966,7 +1027,14 @@ onInput("d", () => {
     }
     lastPlayerX = playerX;
 
-    movement = true
+    movement = true;
+  }
+
+  // Choose an attack
+  else if (state == "Battle") {
+    if (!action) {
+      attack = 2;
+    }
   }
 })
 
@@ -981,11 +1049,18 @@ afterInput(() => {
 
     // Go on with the Hakkuun conversation
     if (level == "HakkuunConversation")
-      EndDialogue(line)
+      EndDialogue(line);
   }
 
-  if (state == "Battle") {
-    Battle()
+  // Handle battle system
+  else if (state == "Battle") {
+    // Load the battle for the first time
+    if (loadBattle) {
+      battle();
+    }
+    
+    battleOnGoing();
+    
   }
 
   else if (level == "Overworld") {
@@ -1018,7 +1093,7 @@ afterInput(() => {
         opponentLevel = Math.floor(Math.random() * spriMonLevel + 1)
         
         clearText()
-        Battle()
+        battle()
         return;
       }
     } 
@@ -1033,19 +1108,19 @@ afterInput(() => {
     if (hakkuunInteraction) {
       // Hakkuun is asleep when player doesn't have enough tickets
       if (tickets < 1)
-        addText("zzzzzz...", {x: 1, y: 9, color: color`2`})
+        addText("zzzzzz...", {x: 1, y: 9, color: color`2`});
       // Prepare the hakkuun conversation
       else {
-        state = "Dialogue"
-        level = "HakkuunConversation"
-        setMap(levels[level])
-        line = 0
-        select = 0
+        state = "Dialogue";
+        level = "HakkuunConversation";
+        setMap(levels[level]);
+        line = 0;
+        select = 0;
       }
-      hakkuunInteraction = false
+      hakkuunInteraction = false;
     }
 
-    movement = false
+    movement = false;
   }
 })
 
