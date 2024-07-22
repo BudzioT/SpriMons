@@ -5,6 +5,36 @@
 @addedOn: 2024-07-20
 */
 
+/* 
+
+  ██████████████████████████████████████████████████
+  █─▄▄▄▄█▄─▄▄─█▄─▄▄▀█▄─▄█▄─▀█▀─▄█─▄▄─█▄─▀█▄─▄█─▄▄▄▄█
+  █▄▄▄▄─██─▄▄▄██─▄─▄██─███─█▄█─██─██─██─█▄▀─██▄▄▄▄─█
+  ▀▄▄▄▄▄▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▄▄▄▀▄▄▄▄▀▄▄▄▀▀▄▄▀▄▄▄▄▄▀
+
+  A Hack Club's Arcade themed RPG game!
+  
+
+  HOW TO PLAY:
+    Get into the role of the ultimate Hack Club's member, that's gotta save the Arcade 
+    event!
+    Save the event by collecting enough tickets and giving them to Hakkuun, who's fast 
+    asleep!
+    Watch out though, she might be angry that you woken her up...
+    
+    Train your SpriMon, defeat the wild ones, be the best trainer in the entire Hack Club!
+
+  KEYBINDS:
+    Next Dialog Line, Interact: K, L
+    Choose an option: A, D
+    Accept the option: K, L
+    
+    Movement: WASD
+    
+    Attack 1: A
+    Attack 2: D
+*/
+
 
 // ---------------------------------- Sprites setup ----------------------------------
 // Character sprites
@@ -92,7 +122,7 @@ let opponentSp = 0;
 
 // Starter SpriMon stats
 let spriMon = '';
-let spriMonLevel = 6;
+let spriMonLevel = 1;
 let exp = 0;
 let stats = {};
 let hp = 0;
@@ -405,6 +435,38 @@ const attackSound = tune`
 40.16064257028113: A4/40.16064257028113 + G4/40.16064257028113,
 602.4096385542169`;
 
+const startMusic = tune`
+392.15686274509807,
+196.07843137254903: F5-196.07843137254903 + A4~196.07843137254903,
+196.07843137254903,
+196.07843137254903: D5-196.07843137254903,
+196.07843137254903: C5/196.07843137254903,
+196.07843137254903,
+196.07843137254903: A4-196.07843137254903 + D5~196.07843137254903,
+196.07843137254903: F4/196.07843137254903,
+196.07843137254903,
+196.07843137254903: F4-196.07843137254903,
+196.07843137254903: D5^196.07843137254903,
+196.07843137254903: B4~196.07843137254903,
+196.07843137254903,
+196.07843137254903: A4/196.07843137254903,
+196.07843137254903: B4-196.07843137254903,
+196.07843137254903: F4^196.07843137254903,
+196.07843137254903,
+196.07843137254903: A4/196.07843137254903,
+196.07843137254903,
+196.07843137254903: C5-196.07843137254903 + E4^196.07843137254903,
+196.07843137254903,
+196.07843137254903: G4-196.07843137254903,
+196.07843137254903,
+196.07843137254903: D4^196.07843137254903,
+196.07843137254903,
+196.07843137254903: A4~196.07843137254903,
+196.07843137254903: B4/196.07843137254903,
+196.07843137254903,
+196.07843137254903: F4-196.07843137254903,
+196.07843137254903: E4^196.07843137254903 + E5^196.07843137254903,
+196.07843137254903`;
 const gameMusic = tune`
 500,
 500: G5^500,
@@ -503,7 +565,38 @@ const battleMusic = tune`
 175.43859649122808: F5-175.43859649122808,
 175.43859649122808: G4-175.43859649122808`;
 const bossBattleMusic = tune`
-16000`;
+225.5639097744361: G4-225.5639097744361,
+225.5639097744361: B4/225.5639097744361 + G5~225.5639097744361 + D4~225.5639097744361 + A4-225.5639097744361,
+225.5639097744361: B4-225.5639097744361 + E4~225.5639097744361,
+225.5639097744361: E5^225.5639097744361 + E4~225.5639097744361,
+225.5639097744361: A4/225.5639097744361,
+225.5639097744361: D5^225.5639097744361 + A5-225.5639097744361,
+225.5639097744361: C5^225.5639097744361 + G4~225.5639097744361 + G5-225.5639097744361,
+225.5639097744361: B4^225.5639097744361,
+225.5639097744361: B4^225.5639097744361 + G5-225.5639097744361 + G4~225.5639097744361,
+225.5639097744361: C5^225.5639097744361 + E4^225.5639097744361,
+225.5639097744361: D5^225.5639097744361 + A5-225.5639097744361,
+225.5639097744361: D5^225.5639097744361 + E5^225.5639097744361 + B4~225.5639097744361,
+225.5639097744361: E5^225.5639097744361 + A5~225.5639097744361,
+225.5639097744361: F5^225.5639097744361 + G4/225.5639097744361 + A4/225.5639097744361,
+225.5639097744361: F5^225.5639097744361 + A4/225.5639097744361,
+225.5639097744361,
+225.5639097744361: D5/225.5639097744361 + G4^225.5639097744361,
+225.5639097744361: D5/225.5639097744361 + A5-225.5639097744361,
+225.5639097744361: F5-225.5639097744361 + D4~225.5639097744361,
+225.5639097744361,
+225.5639097744361: A4~225.5639097744361 + A5-225.5639097744361 + D4~225.5639097744361,
+225.5639097744361: A4~225.5639097744361 + D5~225.5639097744361,
+225.5639097744361: D5~225.5639097744361,
+225.5639097744361: G5-225.5639097744361,
+225.5639097744361: D5/225.5639097744361,
+225.5639097744361,
+225.5639097744361: G5/225.5639097744361 + F4~225.5639097744361,
+225.5639097744361: G4-225.5639097744361 + F5~225.5639097744361,
+225.5639097744361: A5/225.5639097744361,
+225.5639097744361: E5~225.5639097744361,
+225.5639097744361: E5-225.5639097744361 + F4-225.5639097744361,
+225.5639097744361: E5/225.5639097744361 + G4-225.5639097744361`;
 
 const ticketSound = tune`
 375,
@@ -517,6 +610,12 @@ const grassSound = tune`
 37.5: G4~37.5,
 37.5: G4~37.5,
 975`;
+
+let startMusicPlayback = playTune(startMusic, Infinity);
+let gameMusicPlayback;
+let victoryMusicPlayback;
+let battleMusicPlayback;
+let bossBattleMusicPlayback;
 
 
 // ---------------------------------- Helper functions ----------------------------------
@@ -730,6 +829,12 @@ function createOverworld() {
   setMap(levels[level]);
   setBackground(earth);
 
+  if (battleMusicPlayback)
+    battleMusicPlayback.end();
+  if (startMusicPlayback)
+    startMusicPlayback.end();
+  gameMusicPlayback = playTune(gameMusic, Infinity)
+
   if (player == boy)
     addSprite(1, 1, boy);
   else
@@ -746,6 +851,16 @@ function endScreen() {
   let lastPlayer = false;
   let leaveBattle = false;
   let hakkuunBattle = false;
+
+  if (gameMusicPlayback)
+    gameMusicPlayback.end();
+  if (battleMusicPlayback)
+    battleMusicPlayback.end();
+  if (bossBattleMusicPlayback)
+    bossBattleMusicPlayback.end();
+  if (startMusicPlayback)
+    startMusicPlayback.end();
+  victoryMusicPlayback = playTune(victoryMusic, Infinity);
   
   level = "End"
   state = "End"
@@ -802,6 +917,18 @@ function handleAccept() {
 
 // Handle battle system
 function battle() {
+  // Manage sounds
+  if (gameMusicPlayback)
+    gameMusicPlayback.end();
+  if (bossBattleMusicPlayback)
+    bossBattleMusicPlayback.end();
+  if (startMusicPlayback)
+  startMusicPlayback.end();
+  if (!hakkuunBattle)
+    battleMusicPlayback = playTune(battleMusic, Infinity);
+  else
+    bossBattleMusicPlayback = playTune(bossBattleMusic, Infinity);
+  
   // Set the scene
   level = "Battle";
   state = "Battle";
@@ -893,6 +1020,7 @@ function battleOnGoing() {
       sp -= Math.floor(stats["COST1"]);
       text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME1"] + "\ndealing " 
         + Math.floor(stats["DMG1"]) + " dmg!";
+      playTune(attackSound);
     }
     // Use the second attack
     else if (attack == 2 && sp > stats["COST2"]) {
@@ -900,6 +1028,7 @@ function battleOnGoing() {
         sp -= Math.floor(stats["COST2"]);
         text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME2"] + "\ndealing " 
           + Math.floor(stats["DMG2"]) + " dmg!";
+        playTune(attackSound);
     }
 
     else {
@@ -939,6 +1068,7 @@ function battleOnGoing() {
       text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
         + opponentStats["NAME1"] + "\ndealing " + Math.floor(opponentStats["DMG1"]) 
         + " dmg!";
+      playTune(attackSound);
     }
 
     // Use the second attack
@@ -948,6 +1078,7 @@ function battleOnGoing() {
       text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
         + opponentStats["NAME2"] + "\ndealing " + Math.floor(opponentStats["DMG2"]) 
         + " dmg!";
+      playTune(attackSound);
     }
 
     else {
@@ -982,6 +1113,10 @@ function battleOnGoing() {
   if (opponentHp <= 0 || hp <= 0) {
     clearText();
     playTune(deathSound);
+    if (!hakkuunBattle)
+      battleMusicPlayback.end();
+    else
+      bossBattleMusicPlayback.end();
   }
 }
 
@@ -1364,7 +1499,7 @@ afterInput(() => {
     // Interact with hakkuun
     if (hakkuunInteraction) {
       // Hakkuun is asleep when player doesn't have enough tickets
-      if (tickets < 0)
+      if (tickets < 8)
         addText("zzzzzz...", {x: 1, y: 9, color: color`2`});
         
       // Prepare the hakkuun battle
