@@ -107,6 +107,7 @@ let enemyRest = false;
 let loadBattle = true;
 let lastPlayer = false;
 let leaveBattle = false;
+let hakkuunBattle = false;
 
 
 setLegend(
@@ -411,7 +412,7 @@ function setCurrentMap(map) {
   // Add sprites to it
   for (let i = 0; i < map.length; i++) {
     for (let j = 0; j < map[i].length; j++) {
-      const position = j + ", " + i;
+      const position = j + ',' + i;
       
       for (let k = 0; k < map[i][j].length; k++) {
         if (map[i][j][k] == ticket && collected.includes(position))
@@ -1106,42 +1107,54 @@ afterInput(() => {
 
     if (leaveBattle) {
       clearText();
-      level = "Overworld";
-      state = "Overworld";
-      
-      setMap(levels[level]);
-      setBackground(earth);
 
-      if (player == boy)
-        addSprite(lastPlayerX, lastPlayerY, boy);
-      else
-        addSprite(lastPlayerX, lastPlayerY, girl);
-
-      // Make the collected tickets disappear
-      if (collectedPosX) {
-        for (let i = 0; i < collectedPosX.length; i++) {
-          clearTile(collectedPosX, collectedPosY);
+      // Handle winning hakkuun boss battle
+      if (hakkuunBattle && hp >= 0) {
+        state = "Dialogue"
+        level = "HakkuunConversation";
+        setMap(levels[level]);
+        line = 0;
+        select = 0;
+      } 
+      else {
+        level = "Overworld";
+        state = "Overworld";
+        
+        setMap(levels[level]);
+        setBackground(earth);
+  
+        if (player == boy)
+          addSprite(lastPlayerX, lastPlayerY, boy);
+        else
+          addSprite(lastPlayerX, lastPlayerY, girl);
+  
+        // Make the collected tickets disappear
+        if (collectedPosX) {
+          for (let i = 0; i < collectedPosX.length; i++) {
+            clearTile(collectedPosX, collectedPosY);
+          }
         }
+        
+        playerX = lastPlayerX;
+        playerY = lastPlayerY;
+  
+        autoMap = createMap();
+        setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap));
+  
+        loadBattle = true;
+  
+        // Set correct stats
+        hp = Math.round(spriMonsData[spriMon]["HP"]);
+        sp = Math.round(spriMonsData[spriMon]["SP"]);
+        opponentHp = Math.round(opponentStats["HP"]);
+        opponentSp = Math.round(opponentStats["SP"]);
+        
+        leaveBattle = false;
+  
+        enemyTurn = false;
+        lastPlayer = false;
+        hakkuunBattle = false;
       }
-      
-      playerX = lastPlayerX;
-      playerY = lastPlayerY;
-
-      autoMap = createMap();
-      setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap));
-
-      loadBattle = true;
-
-      // Set correct stats
-      hp = Math.round(spriMonsData[spriMon]["HP"]);
-      sp = Math.round(spriMonsData[spriMon]["SP"]);
-      opponentHp = Math.round(opponentStats["HP"]);
-      opponentSp = Math.round(opponentStats["SP"]);
-      
-      leaveBattle = false;
-
-      enemyTurn = false;
-      lastPlayer = false;
     }
   }
 
@@ -1154,26 +1167,23 @@ afterInput(() => {
     // Make player able to collect tickets
     playerTickets = tilesWith(player, ticket);
 
-    // Store the collected position and collect it
     if (playerTickets.length > 0) {
-      playerTickets.forEach(ticket => {
-        const pos = ticket.x + ", " + ticket.y;
-        if (!collectedTickets.includes(position)) {
-          tickets += 1;
-          ticket.remove();
-        }
-      })
-      
-      tickets += 1;
+      // Store the collected position and collect it
       tiles = getAll(ticket);
       
       for (let i = 0; i < tiles.length; i++) {
         if (Math.abs(tiles[i].x - playerX) < 5) {
-          if (Math.abs(tiles[i].y - playerY) < 5)
+          if (Math.abs(tiles[i].y - playerY) < 5) {
             tiles[i].remove();
+            tickets += 1;
+            for (let j = -4; j < 5; j++) {
+              collected.push((playerX + j) + ',' + (playerY + j))
+            }
+          }
         }
       }
     }
+    
 
     // Check if a battle should occur
     playerGrass = tilesWith(player, tallGrass)
@@ -1201,13 +1211,13 @@ afterInput(() => {
       // Hakkuun is asleep when player doesn't have enough tickets
       if (tickets < 1)
         addText("zzzzzz...", {x: 1, y: 9, color: color`2`});
-      // Prepare the hakkuun conversation
+        
+      // Prepare the hakkuun battle
       else {
-        state = "Dialogue";
-        level = "HakkuunConversation";
-        setMap(levels[level]);
-        line = 0;
-        select = 0;
+        hakkuunBattle = true;
+        opponent = hakkuun;
+        opponentLevel = 1;
+        battle();
       }
       hakkuunInteraction = false;
     }
