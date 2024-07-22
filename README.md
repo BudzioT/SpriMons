@@ -2,7 +2,7 @@
 ## :computer: Info
 A Hack Club's Arcade themed RPG game!<br>
 Made for the ultimate console: Sprig!<br>
-Play it here: https://sprig.hackclub.com/share/M0zbxuffBkf6EROXkthY
+Play it here: https://sprig.hackclub.com/share/4KvmUylH6Wtw3dCh9Er3
 
 ## :hammer: Description
 Get into the role of the ultimate Hack Club's member, that's gotta save the Arcade event!<br>
