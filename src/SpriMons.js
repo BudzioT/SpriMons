@@ -106,6 +106,7 @@ let rest = false;
 let enemyRest = false;
 let loadBattle = true;
 let lastPlayer = false;
+let leaveBattle = false;
 
 
 setLegend(
@@ -1051,7 +1052,53 @@ afterInput(() => {
     if (!lastPlayer) {
       movesText();
     }
-    
+
+    // Handle losing or winning
+    if (opponentHp <= 0) {
+      exp += opponentStats["DROP"];
+      if (exp >= stats["EXP"]) {
+        spriMonLevel += 1;
+        exp = 0;
+      }
+
+      addText("You earned " + Math.floor(opponentStats["DROP"]) + " exp!", { x: 1, y: 12, 
+                                                                color: color`9`});
+
+      leaveBattle = true;
+    }
+    else if (hp <= 0) {
+      leaveBattle = true;
+    }
+
+    if (leaveBattle) {
+      clearText();
+      level = "Overworld";
+      state = "Overworld";
+      
+      setMap(levels[level]);
+      setBackground(earth);
+
+      if (player == boy)
+        addSprite(lastPlayerX, lastPlayerY, boy);
+      else
+        addSprite(lastPlayerX, lastPlayerY, girl);
+      
+      playerX = lastPlayerX;
+      playerY = lastPlayerY;
+
+      autoMap = createMap();
+      setCurrentMap(autoMap);
+
+      loadBattle = true;
+
+      // Set correct stats
+      hp = Math.round(spriMonsData[spriMon]["HP"]);
+      sp = Math.round(spriMonsData[spriMon]["SP"]);
+      opponentHp = Math.round(opponentStats["HP"]);
+      opponentSp = Math.round(opponentStats["SP"]);
+      
+      leaveBattle = false;
+    }
   }
 
   else if (level == "Overworld") {
@@ -1085,12 +1132,13 @@ afterInput(() => {
         
         clearText()
         battle()
+        movement = false;
         return;
       }
     } 
 
     // Update the camera position
-    if (movement) {
+    if (movement && state != "Battle") {
       autoMap = createMap();
       setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap));
     }
