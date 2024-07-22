@@ -105,6 +105,7 @@ let attack = 0;
 let rest = false;
 let enemyRest = false;
 let loadBattle = true;
+let lastPlayer = false;
 
 
 setLegend(
@@ -703,124 +704,111 @@ function movesText() {
 
 // Handle the battle's process
 function battleOnGoing() {
-  clearText()
-
   // If there was an attempt to make a attack
   if (attack && !action) {
-    // Turn the flags
-    attack = false;
     action = true;
+    lastPlayer = true;
     
     text = '';
     // Rest if there isn't any stamina
     if (Math.floor(sp) <= 0) {
       rest = true;
-      sp += Math.floor(Math.random() * stats["SP"] / 10 + 1)
-      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + Math.floor(stats["SP"]) 
+      let regainedSp = Math.floor(Math.random() * stats["SP"] / 10 + 1);
+      sp += regainedSp;
+      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + regainedSp
         + " SP";
     }
     // Make the first attack
-    else if (attack == 1) {
-      if (sp > stats["COST1"]) {
-        opponentHp -= stats["DMG1"];
-        sp -= stats["COST1"];
-        text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME1"] + "\ndealing " 
-          + Math.floor(stats["DMG1"]) + " dmg!";
-      }
+    else if (attack == 1 && sp > stats["COST1"]) {
+      opponentHp -= Math.floor(stats["DMG1"]);
+      sp -= Math.floor(stats["COST1"]);
+      text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME1"] + "\ndealing " 
+        + Math.floor(stats["DMG1"]) + " dmg!";
     }
     // Use the second attack
-    else if (attack == 2) {
-      if (sp > stats["COST2"]) {
-        opponentHp -= stats["DMG2"];
-        sp -= stats["COST2"];
+    else if (attack == 2 && sp > stats["COST2"]) {
+        opponentHp -= Math.floor(stats["DMG2"]);
+        sp -= Math.floor(stats["COST2"]);
         text = "Your " + stats["NICKNAME"] + "\nused " + stats["NAME2"] + "\ndealing " 
           + Math.floor(stats["DMG2"]) + " dmg!";
-      }
     }
 
     else {
       rest = true;
-      sp += Math.floor(Math.random() * stats["SP"] / 10 + 1)
-      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + Math.floor(stats["SP"])
+      let regainedSp = Math.floor(Math.random() * stats["SP"] / 10 + 1);
+      sp += regainedSp;
+      text = "Your " + stats["NICKNAME"] + "\nrests and regains\n" + regainedSp
         + " SP";
     }
 
-    // Set correct stats
-    hp = Math.round(spriMonsData[spriMon]["HP"]);
-    sp = Math.round(spriMonsData[spriMon]["SP"]);
-    opponentHp = Math.round(opponentStats["HP"]);
-    opponentSp = Math.round(opponentStats["SP"]);
-
     clearText();
     addText(text, {x: 1, y: 12, color: color`6`})
+
+    // Turn the flags
+    attack = 0;
   }
 
   // Handle enemy's actions
-  else if (enemyTurn && !action) {
+  else if (enemyTurn) {
     action = true;
 
     text = '';
-     if (Math.floor(opponentSp) <= 0) {
+    
+    enemyTurn = Math.floor(Math.random() * 2) + 1;
+    
+    if (Math.floor(opponentSp) <= 0) {
       opponentRest = true;
-      opponentSp += Math.floor(Math.random() * opponentStats["SP"] / 10 + 1)
+      let regainedSp = Math.floor(Math.random() * opponentStats["SP"] / 10 + 2);
+      opponentSp += regainedSp;
       text = "Wild " + opponentStats["NICKNAME"] + 
-        "\nrests and regains\n" + Math.floor(opponentStats["SP"]) + " SP";
+        "\nrests and regains\n" + regainedSp + " SP";
     }
 
-    enemyTurn = Math.floor(Math.random() * 2) + 1;
-
-    else if (enemyTurn == 1) {
-      if (opponentSp > stats["COST1"]) {
-        hp -= Math.floor(stats["DMG1"]);
-        opponentSp -= Math.floor(opponentStats["COST1"]);
-        text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
-          + opponentStats["NAME1"] + "\ndealing " + Math.floor(opponentStats["DMG1"]) 
-          + " dmg!";
-      }
+    else if (enemyTurn == 1 && opponentSp > opponentStats["COST1"]) {
+      hp -= Math.floor(opponentStats["DMG1"]);
+      opponentSp -= Math.floor(opponentStats["COST1"]);
+      text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
+        + opponentStats["NAME1"] + "\ndealing " + Math.floor(opponentStats["DMG1"]) 
+        + " dmg!";
     }
 
     // Use the second attack
-    else if (enemyTurn == 2) {
-      if (sp > stats["COST2"]) {
-         hp -= Math.floor(stats["DMG2"]);
-        opponentSp -= Math.floor(opponentStats["COST2"]);
-        text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
-          + opponentStats["NAME2"] + "\ndealing " + Math.floor(opponentStats["DMG2"]) 
-          + " dmg!";
-      }
+    else if (enemyTurn == 2 && opponentSp > opponentStats["COST2"]) {
+      hp -= Math.floor(opponentStats["DMG2"]);
+      opponentSp -= Math.floor(opponentStats["COST2"]);
+      text = "Wild " + opponentStats["NICKNAME"] + "\nused " 
+        + opponentStats["NAME2"] + "\ndealing " + Math.floor(opponentStats["DMG2"]) 
+        + " dmg!";
     }
 
     else {
       opponentRest = true;
-      opponentSp += Math.floor(Math.random() * opponentStats["SP"] / 10 + 1);
+      let regainedSp = Math.floor(Math.random() * opponentStats["SP"] / 10 + 2);
+      opponentSp += regainedSp;
       text = "Wild " + opponentStats["NICKNAME"] + 
-        "\nrests and regains\n" + Math.floor(opponentStats["SP"]) + " SP";
+        "\nrests and regains\n" + regainedSp + " SP";
     }
-
-    // Set correct stats
-    hp = Math.round(spriMonsData[spriMon]["HP"]);
-    sp = Math.round(spriMonsData[spriMon]["SP"]);
-    opponentHp = Math.round(opponentStats["HP"]);
-    opponentSp = Math.round(opponentStats["SP"]);
 
     clearText();
     addText(text, {x: 1, y: 12, color: color`6`})
 
-    enemyTurn = false;
+    enemyTurn = 0;
   }
 
-  else if (!attack && action) {
+  else if (action) {
+    if (lastPlayer) {
+      clearText();
       battleText();
       enemyTurn = true;
-      action = false;
-  }
-
-  else if (!enemyTurn && action) {
-    battleText();
-    movesText();
+      lastPlayer = false;
+    }
+    else {
+      clearText();
+      battleText();
+      movesText();
+    }
     action = false;
   }
-  
 }
 
 
@@ -1058,8 +1046,11 @@ afterInput(() => {
     if (loadBattle) {
       battle();
     }
-    
+
     battleOnGoing();
+    if (!lastPlayer) {
+      movesText();
+    }
     
   }
 
