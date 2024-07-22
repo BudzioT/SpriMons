@@ -20,17 +20,17 @@ const gitbon = 'n';
 
 const spriMonsData = { 
   [orpheus]: { "HP": 10, "SP": 5, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1,"EXP": 50, 
-            "DROP": 35, "NAME1": "Punch", "NAME2": "Scratch", "NICKNAME": "Orpheus"},
-  [hakkuun]: { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1, "EXP": 45, 
-            "DROP": 40, "NAME1": "Swipe", "NAME2": "Scratch", "NICKNAME": "Hakkuun"},
-  [hackMon]: { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1, "EXP": 50, 
-            "DROP": 45, "NAME1": "Code", "NAME2": "Break", "NICKNAME": "HackMon"},
-  [sprigus]: { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2, "EXP": 30, 
-            "DROP": 50, "NAME1": "Push", "NAME2": "Jump", "NICKNAME": "Sprigus"},
-  [raspberin]: { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2, "EXP": 40, 
-              "DROP": 45, "NAME1": "Beep", "NAME2": "Light", "NICKNAME": "Raspberin"},
-  [gitbon]: { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, "EXP": 45, 
-              "DROP": 50, "NAME1": "Push", "NAME2": "Pull", "NICKNAME": "Gitbon"}
+            "DROP": 8, "NAME1": "Punch", "NAME2": "Scratch", "NICKNAME": "Orpheus"},
+  [hakkuun]: { "HP": 8, "SP": 7, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 1, "EXP": 55, 
+            "DROP": 9, "NAME1": "Swipe", "NAME2": "Scratch", "NICKNAME": "Hakkuun"},
+  [hackMon]: { "HP": 13, "SP": 10, "DMG1": 2, "DMG2": 1, "COST1": 2, "COST2": 1, "EXP": 55, 
+            "DROP": 20, "NAME1": "Code", "NAME2": "Break", "NICKNAME": "HackMon"},
+  [sprigus]: { "HP": 5, "SP": 7, "DMG1": 5, "DMG2": 3, "COST1": 3, "COST2": 2, "EXP": 45, 
+            "DROP": 15, "NAME1": "Push", "NAME2": "Jump", "NICKNAME": "Sprigus"},
+  [raspberin]: { "HP": 7, "SP": 8, "DMG1": 4, "DMG2": 2, "COST1": 3, "COST2": 2, "EXP": 45, 
+              "DROP": 12, "NAME1": "Beep", "NAME2": "Light", "NICKNAME": "Raspberin"},
+  [gitbon]: { "HP": 9, "SP": 7, "DMG1": 3, "DMG2": 2, "COST1": 2, "COST2": 1, "EXP": 50, 
+              "DROP": 14, "NAME1": "Push", "NAME2": "Pull", "NICKNAME": "Gitbon"}
 };
   
 // Boxes
@@ -362,11 +362,16 @@ let lastPlayerX = playerX;
 let lastPlayerY = playerY;
 let autoMap = [];
 
+// Movement and interaction flags
 let movement = true;
 let hakkuunInteraction = false;
 
+// Dialogue lines
 let maxLine = 12;
 let maxHakkuunLine = 5;
+
+// Collected tickets
+let collected = [];
 
 // ---------------------------------- Helper functions ----------------------------------
 // Prepare the map
@@ -406,7 +411,11 @@ function setCurrentMap(map) {
   // Add sprites to it
   for (let i = 0; i < map.length; i++) {
     for (let j = 0; j < map[i].length; j++) {
+      const position = j + ", " + i;
+      
       for (let k = 0; k < map[i][j].length; k++) {
+        if (map[i][j][k] == ticket && collected.includes(position))
+          continue;
         addSprite(j, i, map[i][j][k]);
       }
     }
@@ -660,15 +669,19 @@ function battle() {
 
   for (let stat in opponentStats) {
     if (typeof opponentStats[stat] == 'number') {
-      if (stat != "COST1" && stat != "COST2")
+      if (stat != "COST1" && stat != "COST2" && stat != "SP")
         opponentStats[stat] *= (opponentLevel * 1.3);
+      if (stat == "SP")
+        opponentStats[stat] *= (opponentLevel * 1.15);
     }
   }
 
   for (let stat in stats) {
     if (typeof stats[stat] === 'number') {
       if (stat != "COST1" && stat != "COST2")
-        stats[stat] *= (spriMonLevel * 1.3);
+        stats[stat] *= (spriMonLevel * 1.2);
+      if (stat == "SP")
+        stats[stat] *= (spriMonLevel * 1.1);
     }
   }
 
@@ -809,6 +822,10 @@ function battleOnGoing() {
       movesText();
     }
     action = false;
+  }
+
+  if (opponentHp <= 0 || hp <= 0) {
+    clearText();
   }
 }
 
@@ -1055,20 +1072,37 @@ afterInput(() => {
 
     // Handle losing or winning
     if (opponentHp <= 0) {
+      clearText();
       exp += opponentStats["DROP"];
-      if (exp >= stats["EXP"]) {
-        spriMonLevel += 1;
-        exp = 0;
-      }
 
       addText("You earned " + Math.floor(opponentStats["DROP"]) + " exp!", { x: 1, y: 12, 
                                                                 color: color`9`});
+      
+      if (exp >= stats["EXP"]) {
+        spriMonLevel += 1;
+        exp = 0;
 
-      leaveBattle = true;
+        addText("Level Up! \nNew level: " + spriMonLevel, 
+                {x: 1, y: 13, color: color`9`});
+      }
+      state = "PostBattle";
+      //leaveBattle = true;
     }
     else if (hp <= 0) {
-      leaveBattle = true;
+      addText("You were defeated\nby the wild\n" + opponentStats["NICKNAME"], 
+              {x: 1, y: 12, color: color`9`});
+      state = "PostBattle";
+      //leaveBattle = true;
     }
+  }
+
+  
+  else if (state == "PostBattle") {
+    clearText();
+    onInput("k", () => {
+      clearText();
+      leaveBattle = true;
+    });
 
     if (leaveBattle) {
       clearText();
@@ -1082,12 +1116,19 @@ afterInput(() => {
         addSprite(lastPlayerX, lastPlayerY, boy);
       else
         addSprite(lastPlayerX, lastPlayerY, girl);
+
+      // Make the collected tickets disappear
+      if (collectedPosX) {
+        for (let i = 0; i < collectedPosX.length; i++) {
+          clearTile(collectedPosX, collectedPosY);
+        }
+      }
       
       playerX = lastPlayerX;
       playerY = lastPlayerY;
 
       autoMap = createMap();
-      setCurrentMap(autoMap);
+      setCurrentMap(setupMap(playerX - 5, playerY - 4, 10, 8, autoMap));
 
       loadBattle = true;
 
@@ -1098,6 +1139,9 @@ afterInput(() => {
       opponentSp = Math.round(opponentStats["SP"]);
       
       leaveBattle = false;
+
+      enemyTurn = false;
+      lastPlayer = false;
     }
   }
 
@@ -1109,8 +1153,17 @@ afterInput(() => {
     
     // Make player able to collect tickets
     playerTickets = tilesWith(player, ticket);
-    
+
+    // Store the collected position and collect it
     if (playerTickets.length > 0) {
+      playerTickets.forEach(ticket => {
+        const pos = ticket.x + ", " + ticket.y;
+        if (!collectedTickets.includes(position)) {
+          tickets += 1;
+          ticket.remove();
+        }
+      })
+      
       tickets += 1;
       tiles = getAll(ticket);
       
